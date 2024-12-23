@@ -1,0 +1,16 @@
+@mixin parkinsans-bold() {
+    font-family: "Parkinsans", serif;
+    font-optical-sizing: auto;
+    font-weight: 800;
+    font-style: normal;
+}
+
+@mixin text($fontSize: 16px) {
+    font-size: $fontSize;
+    line-height: $fontSize + 10px;
+}
+
+@mixin title($fontSize: 40px) {
+    @include text($fontSize);
+    @include parkinsans-bold();
+}

@@ -1,4 +1,4 @@
-@use './variables';
+@use '../variables';
 
 .header-home {
     position: absolute;
@@ -16,16 +16,13 @@
     }
 
     &__nav {
-        display: flex;
-        justify-content: end;
-        float: left;
         
         &__item {
             a {
                 color: #fff;
 
                 &:hover {
-                    color: #FF5E14;
+                    color: variables.$secondTextColor;
                 }
             }
         }
@@ -34,12 +31,18 @@
 
 .about {
     position: relative;
-    background-image: url('../images/home/pexels-jibarofoto-1920x1280.jpg');
+    background-image: url('#{variables.$images-path}/home/praise-1920x1280.jpg');
     background-attachment: fixed;
     background-position: center;
     background-size: cover;
     height: 100vh;
     color: #fff;
+
+    @media (max-width: 768px) {
+        background-image: url('#{variables.$images-path}/home/praise-640x427.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
 
     .overlay{
         position: absolute;
@@ -60,7 +63,7 @@
             }
     
             .title--big {
-                color: #FF5E14;
+                color: variables.$secondTextColor;
             }
         }
     }
