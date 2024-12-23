@@ -1,0 +1,36 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block content %}
+    <header class="navbar navbar-expand-lg p-4 header-home">
+        <div class="container">
+            <h1 class="navbar-brand title--big">Louvor</h1>
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <nav class="navbar-collapse collapse header-home__nav" id="menu">
+                <ul class="nav nav-pills">
+                    <li class="nav-item fw-bold header-home__nav__item">
+                        <a href="#about" class="nav-link text--big">
+                            <i class="bi bi-person-fill me-1"></i>
+                            Entrar
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <section class="col-12 about">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row about__info">
+                <div class="col-md-8 about__info__content">
+                    <p class="text--smal">Lorem ipsum dolor sit amet consectetur.</p>
+                    <h2 class="title--big mt-5 mb-5">Igreja Batista</h2>
+                    <p class="text">
+                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quaerat molestiae eius, veniam repudiandae ex ducimus incidunt. Ex itaque repudiandae soluta molestias sint sequi vero aliquam fuga ea perferendis, nemo nesciunt?
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock content %}
