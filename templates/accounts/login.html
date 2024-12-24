@@ -1,7 +1,7 @@
 {% extends 'shared/base.html' %}
 {% load static %}
 
-{% block content %}
+{% block contents %}
 <main>
     <div class="container">
 
@@ -12,47 +12,47 @@
 
                         <div class="card mb-3">
 
-                            <div class="card-body">
+                            <div class="card-body card__form">
 
-                            <div class="pt-4 pb-2">
-                                <h5 class="card-title text-center pb-0 fs-4">Login</h5>
-                                <p class="text-center small">Entre com seu usuário e senha</p>
-                            </div>
+                                <div class="pt-4 pb-2">
+                                    <h5 class="card-title text-center pb-0 fs-4 title--small">Login</h5>
+                                    <p class="text-center text">Entre com seu usuário e senha</p>
+                                </div>
 
-                            <form class="row g-3" action="{% url 'login_with_jwt' %}" method="POST">
-                                {% csrf_token %}
+                                <form class="row g-3" action="{% url 'login_with_jwt' %}" method="POST">
+                                    {% csrf_token %}
 
-                                {% for field in login_form %}
-                                    {% if field.name == "username" %}
-                                        <div class="col-12">
-                                            <label for="username" class="form-label">{{ field.label }}</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                    {% for field in login_form %}
+                                        {% if field.name == "username" %}
+                                            <div class="col-12">
+                                                <label for="username" class="form-label text">{{ field.label }}</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                                    {{ field }}
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-12">
+                                                <label for="password" class="form-label text">{{ field.label }}</label>
                                                 {{ field }}
                                             </div>
-                                        </div>
-                                    {% else %}
-                                        <div class="col-12">
-                                            <label for="password" class="form-label">{{ field.label }}</label>
-                                            {{ field }}
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
 
-                                <div class="col-12">
-                                    <button class="btn button" type="submit">Entrar</button>
-                                </div>
+                                    <div class="col-12">
+                                        <button class="btn button text" type="submit">Entrar</button>
+                                    </div>
 
-                                <div class="col-12">
-                                    <p class="small mb-0">Esqueceus sua senha? <a href="#">Clique a aqui</a></p>
-                                </div>
-                            </form>
+                                    <div class="col-12">
+                                        <p class="text--small mb-0">Esqueceu sua senha? <a href="#"> Clique a aqui</a></p>
+                                    </div>
+                                </form>
 
                             </div>
                         </div>
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="alert alert-danger" role="alert">
+                                <div class="alert alert-danger text" role="alert">
                                     {{ message }}
                                 </div>
                             {% endfor %}
@@ -65,5 +65,5 @@
 
     </div>
   </main><!-- End #main -->
-{% endblock content %}
+{% endblock contents %}
     

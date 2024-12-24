@@ -7,6 +7,8 @@ name = "pypi"
 django = "==4.2"
 python-dotenv = "*"
 requests = "*"
+redis = "*"
+django-redis = "*"
 
 [dev-packages]
 

@@ -7,6 +7,9 @@
 @use './components/form';
 @use './components/button';
 
+// Partials
+@use './partials/header';
+
 // Paginas
 @use './pages/home';
-@use './pages/login';
+// @use './pages/login';

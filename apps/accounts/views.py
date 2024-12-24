@@ -25,12 +25,20 @@ def login_with_jwt(request):
             "password": password
         }
         
-        # Requisição do token
+        # Aquisição do token
         try:
             response = requests.post(server_url, json=login_data, timeout=10)
             response.raise_for_status()
 
-            return redirect('home')  
+            tokens = response.json()
+            access_token = tokens.get('access')
+            refresh_token = tokens.get('refresh')
+
+            
+            request.session['access_token'] = access_token
+            request.session['refresh_token'] = refresh_token
+
+            return redirect('dashboard')  
         
         except requests.exceptions.HTTPError:
             if response.status_code == 404:
@@ -45,7 +53,7 @@ def login_with_jwt(request):
                 message_error =  handling_login_error(response_json=response.json(), response_code=response.status_code)
                 messages.error(request, message_error)
         
-        except requests.RequestException as e:
+        except requests.RequestException:
             message_error =  handling_login_error(response_json=response.json(), response_code=response.status_code)
             messages.error(request, message_error)
     

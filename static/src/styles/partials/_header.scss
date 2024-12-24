@@ -1,0 +1,43 @@
+@use '../variables';
+
+.header-dash {
+    background-color: #F4F6F9;
+    box-shadow: 0 5px 5px 5px rgba($color: #c7ecee, $alpha: .6);
+
+    &__menu {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .title--small {
+            margin: 0;
+        }
+
+        &__button {
+            border: 1px solid variables.$secondTextColor;
+            border-radius: 4px;
+            background-color: transparent;
+            margin-left: 10vw;
+            width: 2.5em;
+            height: 2.5em;
+            display: block;
+            align-items: center;
+
+            i {
+                color: variables.$secondTextColor;
+                font-size: 1.5em;
+            }
+        }
+    }
+
+    &__nav {
+        color: variables.$primaryTextColor;
+    }
+
+    &__dropdown_profile {
+
+        i {
+            font-size: 36px;
+        }
+    }
+}
