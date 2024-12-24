@@ -1,4 +1,12 @@
+// base
 @use './variables';
 @use './mixins';
 @use './base';
+
+// Componentes
+@use './components/form';
+@use './components/button';
+
+// Paginas
 @use './pages/home';
+@use './pages/login';
