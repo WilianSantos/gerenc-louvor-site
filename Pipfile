@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 django = "==4.2"
 python-dotenv = "*"
+requests = "*"
 
 [dev-packages]
 

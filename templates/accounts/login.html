@@ -19,20 +19,25 @@
                                 <p class="text-center small">Entre com seu usuário e senha</p>
                             </div>
 
-                            <form class="row g-3" >
+                            <form class="row g-3" action="{% url 'login_with_jwt' %}" method="POST">
+                                {% csrf_token %}
 
-                                <div class="col-12">
-                                    <label for="username" class="form-label">Usuário</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="inputGroupPrepend">@</span>
-                                        <input type="text" name="username" class="form-control" id="username" required>
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <label for="password" class="form-label">Senha</label>
-                                    <input type="password" name="password" class="form-control" id="password" required>
-                                </div>
+                                {% for field in login_form %}
+                                    {% if field.name == "username" %}
+                                        <div class="col-12">
+                                            <label for="username" class="form-label">{{ field.label }}</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                                {{ field }}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="col-12">
+                                            <label for="password" class="form-label">{{ field.label }}</label>
+                                            {{ field }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
 
                                 <div class="col-12">
                                     <button class="btn button" type="submit">Entrar</button>
@@ -45,7 +50,13 @@
 
                             </div>
                         </div>
-
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
