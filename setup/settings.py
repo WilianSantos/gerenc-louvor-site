@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 
+from datetime import timedelta
+
 # Carregando arquivo .env
 load_dotenv()
 
@@ -43,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework_simplejwt',
 
     'apps.home',
     'apps.accounts',
@@ -83,12 +87,16 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'praise_management_site',
+        "USER": "root",
+        "PASSWORD": str(os.getenv('PASSWORD_MYSQL')),
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    }
+}
 
 # Redis caches
 CACHES = {
@@ -103,6 +111,13 @@ CACHES = {
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = "default"
+
+
+#@login_required
+LOGIN_URL = 'login_with_jwt'
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
 
 
 # Password validation
@@ -156,3 +171,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Urls da API
 URL_API_SIMPLE_JWT = 'http://127.0.0.1:8000/api/token/'
+URL_API = 'http://127.0.0.1:8000/api/praise/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+SIMPLE_JWT = {
+    "ALGORITHM": "HS256",  # Certifique-se de que o algoritmo é o mesmo
+    "SIGNING_KEY": SECRET_KEY,  # Certifique-se de que a chave é consistente
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=5),  # Ajuste conforme necessário
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+
+AUTH_USER_MODEL = 'accounts.CustomUser'

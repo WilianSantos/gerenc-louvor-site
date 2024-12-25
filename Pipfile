@@ -9,6 +9,8 @@ python-dotenv = "*"
 requests = "*"
 redis = "*"
 django-redis = "*"
+djangorestframework-simplejwt = "*"
+mysqlclient = "*"
 
 [dev-packages]
 
