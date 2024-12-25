@@ -3,16 +3,30 @@ from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
-import requests
+from apps.accounts.models import CustomUser
+from apps.accounts.simple_jwt import make_request_in_api
 
 
 @login_required
 def dashboard(request):
     
-    # user_id = request.user.id
-    # url = f'{settings.URL_API}member/{user_id}/'
-    # member_response = requests.get(url=url)
-    # member_data = member_response.json()
-    # member_name = member_data.get('name'){"member_name": member_name}
+    user = CustomUser.objects.get(id=request.user.id)
+
+    member_id = user.member_id
+
+    access_token = request.session['access_token'] #TODO Criptografar esses dados
+
+    if access_token:
+
+        member_response = make_request_in_api(
+            endpoint='member/', 
+            id=member_id, 
+            request_method='GET', 
+            access_token=access_token
+        )
+        
+        member_name = member_response.get('name')
+
+        return render (request, 'dashboard/index.html', {'member_name': member_name})
 
     return render (request, 'dashboard/index.html')

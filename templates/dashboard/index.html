@@ -1,5 +1,17 @@
 {% extends 'shared/base_dashboard.html' %}
 {% load static %}
 {% block panel_contents %}
-
+        <div>
+            <br>
+            <br>
+            <br>
+            <br>
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger text" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endblock panel_contents %}

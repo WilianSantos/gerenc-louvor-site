@@ -114,7 +114,7 @@ SESSION_CACHE_ALIAS = "default"
 
 
 #@login_required
-LOGIN_URL = 'login_with_jwt'
+LOGIN_URL = 'login'
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True

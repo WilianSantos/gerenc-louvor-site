@@ -19,7 +19,7 @@
                                     <p class="text-center text">Entre com seu usuário e senha</p>
                                 </div>
 
-                                <form class="row g-3" action="{% url 'login_with_jwt' %}" method="POST">
+                                <form class="row g-3" action="{% url 'login_with_jwt' %}" method="POST" id="form-login">
                                     {% csrf_token %}
 
                                     {% for field in login_form %}

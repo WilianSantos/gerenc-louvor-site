@@ -16,14 +16,14 @@ module.exports = function (grunt) {
                 }
             }
         },
-        // // Compilação de arquivos js
-        // uglify: {
-        //     target: {
-        //         files: {
-        //             './dist/scripts/main.min.js': './src/scripts/main.js'
-        //         }
-        //     }
-        // },
+        // Compilação de arquivos js
+        uglify: {
+            target: {
+                files: {
+                    './static/dist/scripts/main.min.js': './static/src/scripts/main.js'
+                }
+            }
+        },
         // Compressão de imagens
         imagemin: {
             dynamic: {
@@ -42,15 +42,16 @@ module.exports = function (grunt) {
                 tasks: ['sass']              
             }
         },
+        
     });
 
     // Carregar dependências
     grunt.loadNpmTasks('grunt-sass')
     grunt.loadNpmTasks('grunt-contrib-watch')
-    // grunt.loadNpmTasks('grunt-contrib-uglify')
+    grunt.loadNpmTasks('grunt-contrib-uglify')
     grunt.loadNpmTasks('grunt-contrib-imagemin')
 
     // Tarefas registradas
-    grunt.registerTask('default', ['watch'])
-    grunt.registerTask('build', ['sass', 'imagemin'])
+    grunt.registerTask('default', ['watch', 'uglify'])
+    grunt.registerTask('build', ['sass', 'imagemin', 'uglify'])
 }
