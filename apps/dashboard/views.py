@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.conf import settings
+from django.core.signing import Signer
 from django.contrib.auth.decorators import login_required
 
 from apps.accounts.models import CustomUser
@@ -14,7 +14,10 @@ def dashboard(request):
 
     member_id = user.member_id
 
-    access_token = request.session['access_token'] #TODO Criptografar esses dados
+    # Recuperando e verificando os dados
+    signer = Signer()
+    retrieved_data = signer.unsign_object(request.session['encrypted_tokens'])
+    access_token = retrieved_data.get('access_token') 
 
     if access_token:
 

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login
 from django.conf import settings
-from django.http import HttpResponse
+from django.core.signing import Signer
 
 from .models import CustomUser
 from .forms import LoginForms
@@ -19,7 +19,7 @@ def login_with_jwt(request):
             username = login_form.cleaned_data['username']
             password = login_form.cleaned_data['password']
 
-            access_response = getting_access_token(request=request, username=username, password=password)
+            access_response = getting_access_token(username=username, password=password)
 
             message_error = access_response.get('message_error')
             if message_error:
@@ -35,11 +35,13 @@ def login_with_jwt(request):
             )
             login(request, user)
 
+            signer = Signer()
             refresh_token = access_response.get('refresh')
-            request.session['refresh_token'] = refresh_token
-
             access_token = access_response.get('access')
-            request.session['access_token'] = access_token
+            token_data = {'access_token': access_token, 'refresh_token': refresh_token}
+            # Assinando os dados
+            signed_data = signer.sign_object(token_data)
+            request.session['encrypted_tokens'] = signed_data
             
             return redirect('dashboard')
         
