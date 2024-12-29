@@ -46,11 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'rest_framework_simplejwt',
-
     'apps.home',
     'apps.accounts',
     'apps.dashboard',
+    'apps.simpleJWT',
 ]
 
 MIDDLEWARE = [
@@ -115,9 +114,8 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 
 
-
 #@login_required
-LOGIN_URL = 'login'
+LOGIN_URL = 'login_with_jwt'
 CSRF_COOKIE_HTTPONLY = True
 
 
@@ -172,23 +170,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Urls da API
 URL_API_SIMPLE_JWT = 'http://127.0.0.1:8000/api/token/'
+URL_API_SIMPLE_JWT_REFRESH = 'http://127.0.0.1:8000/api/token/refresh/'
 URL_API = 'http://127.0.0.1:8000/api/praise/'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-}
-
-SIMPLE_JWT = {
-    "ALGORITHM": "HS256",  # Certifique-se de que o algoritmo é o mesmo
-    "SIGNING_KEY": SECRET_KEY,  # Certifique-se de que a chave é consistente
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=5),  # Ajuste conforme necessário
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-}
-
-
+# Usuario customizado
 AUTH_USER_MODEL = 'accounts.CustomUser'

@@ -11,11 +11,12 @@
     font-family: "Roboto", serif;
     font-weight: 400;
     font-style: normal;
-    color: variables.$primaryTextColor;
 }
 
 body {
     background-color: variables.$bodyBackgroundColor;
+    color: variables.$primaryTextColor;
+
 }
 
 .text--big {
@@ -85,4 +86,18 @@ body {
     font-optical-sizing: auto;
     font-weight: 500;
     font-style: normal;
+}
+
+.main__content {
+    padding-top: 5vw;
+    padding-left: .5vw;
+    padding-right: .5vw;
+}
+
+.img--is-circle {
+    border-radius: 50%;
+}
+
+.alert {
+    margin-top: 10px;
 }

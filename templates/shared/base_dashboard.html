@@ -1,7 +1,7 @@
 {% extends "shared/base.html" %}
 {% load static %}
 {% block contents %}
-    <header class="navbar navbar-expand-lg fixed-top p-3 header-dash">
+    <header class="navbar navbar-expand-lg sticky-top p-2 header-dash">
         <div class="container">
             <div class="d-flex header-dash__menu">
                 <h1 class="title--small">Igreja</h1>
@@ -11,25 +11,25 @@
             </div>
             <nav class="collapse navbar-collapse justify-content-end header-dash__nav">
                 <ul class="nav nav-pills d-block d-md-flex">
-                    <li class="nav-item fw-bold dropdown">
+                    <li class="nav-item fw-bold dropdown header-dash__nav__dropdown">
                         <a class="nav-link d-flex align-items-center pe-0 header-dash__dropdown_profile" href="#" data-bs-toggle="dropdown">
-                            <span class="d-none d-md-block dropdown-toggle-split ps-2 text--big"> {{ member_name }} </span>
+                            <span class="d-none d-md-block dropdown-toggle-split ps-2 text--big"> {{ member.name }} </span>
                             <i class="bi bi-person-circle"></i>
                         </a><!-- End Profile Iamge Icon -->
                 
                         <ul class="dropdown-menu dropdown-menu-arrow">
                             <li class="dropdown-header">
-                                <h6>Kevin Anderson</h6>
-                                <span>Web Designer</span>
+                                <h6 class="text--big"> {{ member.name }} </h6>
+                                <span class="text">Web Designer</span>
                             </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                 
                             <li>
-                                <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                                    <i class="bi bi-person"></i>
-                                    <span>My Profile</span>
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'my_profile' %}">
+                                    <i class="bi bi-person header-dash--is-hover"></i>
+                                    <span class="text header-dash--is-hover">Meu Perfil</span>
                                 </a>
                             </li>
                             <li>
@@ -38,8 +38,8 @@
                 
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                                    <i class="bi bi-gear"></i>
-                                    <span>Account Settings</span>
+                                    <i class="bi bi-gear header-dash--is-hover"></i>
+                                    <span class="text header-dash--is-hover">Account Settings</span>
                                 </a>
                             </li>
                             <li>
@@ -48,8 +48,8 @@
 
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <i class="bi bi-box-arrow-right"></i>
-                                    <span>Sign Out</span>
+                                    <i class="bi bi-box-arrow-right header-dash--is-hover"></i>
+                                    <span class="text header-dash--is-hover">Sair</span>
                                 </a>
                             </li>
                 
@@ -59,5 +59,9 @@
             </nav>
         </div>
     </header>
-    {% block panel_contents %}{% endblock panel_contents %}
+    <div class="container">
+        <main class="main__content">
+            {% block dashboard_contents %}{% endblock dashboard_contents %}
+        </main>
+    </div>
 {% endblock contents %}

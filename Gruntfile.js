@@ -1,4 +1,5 @@
-const sass = require('sass');
+const sass = require('sass')
+
 
 module.exports = function (grunt) {
     grunt.initConfig({
@@ -20,7 +21,7 @@ module.exports = function (grunt) {
         uglify: {
             target: {
                 files: {
-                    './static/dist/scripts/main.min.js': './static/src/scripts/main.js'
+                    './static/dist/scripts/main.min.js': './static/src/scripts/**/*.js'
                 }
             }
         },
@@ -40,6 +41,10 @@ module.exports = function (grunt) {
             sass: {
                 files: ['./static/src/styles/**/*.scss'], 
                 tasks: ['sass']              
+            },
+            uglify: {
+                files: ['./static/src/scripts/**/*.js'],
+                tasks: ['uglify']
             }
         },
         
@@ -52,6 +57,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-imagemin')
 
     // Tarefas registradas
-    grunt.registerTask('default', ['watch', 'uglify'])
+    grunt.registerTask('default', ['watch'])
     grunt.registerTask('build', ['sass', 'imagemin', 'uglify'])
 }

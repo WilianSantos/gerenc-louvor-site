@@ -1,0 +1,76 @@
+{% extends 'shared/base_dashboard.html' %}
+{% load static %}
+{% block dashboard_contents %}
+    <section class="profile">
+        <div class="profile__forms">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-tabs">
+        
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Editar Perfil</button>
+                        </li>
+        
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Alterar Senha</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-pane fade pt-3 show active" id="profile-edit">
+
+                        <!-- Profile Edit Form -->
+                        <form class="profile__forms__profile" action="{% url 'my_profile' %}" method="POST" enctype="multipart/form-data" id="form-profile">
+                            {% csrf_token %}
+                            {% for field in profile_forms.visible_fields %}
+                                {% if field.name == "profile_picture" %}
+                                    <div class="row">
+                                        <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                        
+                                        <div class="col-12">
+                                            <img class="profile__forms__profile__img" src="{{ member.profile_picture }}" alt="Perfil">
+                                            {{ field }}
+                                        </div>
+                                    </div>
+                                {% elif field.name == "availability" %}
+                                    <div class="row">
+                                        <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                        <div class="col-12">
+                                            <div class="form-check form-check-success">
+                                                {{ field }}
+                                                <label class="form-check-label col-md-4 col-lg-3 text" for="{{ field.id_for_label }}">
+                                                    Disponivel
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% elif field.name == "function" %}
+                                    <div class="row">
+                                        <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                        <div class="col-12">
+                                            {{ field }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="row">
+                                        <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                        <div class="col-12">
+                                            {{ field }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% include "partials/_alerts_forms.html" %}
+                                
+                            {% endfor %}
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn button">Salvar</button>
+                            </div>
+                        </form><!-- End Profile Edit Form -->
+                        {% include "partials/_alerts.html" %}
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock dashboard_contents %}

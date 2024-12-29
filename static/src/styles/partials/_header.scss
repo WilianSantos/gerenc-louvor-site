@@ -3,6 +3,7 @@
 .header-dash {
     background-color: #F4F6F9;
     box-shadow: 0 5px 5px 5px rgba($color: #c7ecee, $alpha: .6);
+    height: 15vh;
 
     &__menu {
         display: flex;
@@ -17,11 +18,12 @@
             border: 1px solid variables.$secondTextColor;
             border-radius: 4px;
             background-color: transparent;
-            margin-left: 10vw;
+            margin-left: 15vw;
             width: 2.5em;
             height: 2.5em;
             display: block;
             align-items: center;
+            
 
             i {
                 color: variables.$secondTextColor;
@@ -32,12 +34,36 @@
 
     &__nav {
         color: variables.$primaryTextColor;
+
+        &__dropdown {
+
+            .dropdown-menu {
+                width: 100%;
+
+                .dropdown-header{
+                    display: block;
+                    text-align: center;
+                }
+
+                .dropdown-item {
+                    .text {
+                        margin-left: 1em;
+                    }
+                }
+            }
+        }
     }
 
     &__dropdown_profile {
 
         i {
-            font-size: 36px;
+            font-size: 50px;
+        }
+    }
+
+    &--is-hover {
+        &:hover {
+            color: variables.$secondTextColor;
         }
     }
 }

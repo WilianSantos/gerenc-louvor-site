@@ -1,0 +1,39 @@
+.profile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 30px;
+
+    &__forms {
+
+        .card {
+            min-width: 680px;
+        }
+        &__profile {
+            &__img {
+                max-width: 200px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .row {
+                display: flex;
+                flex-direction: column;
+                padding-top: 10px;
+                align-items: flex-start;
+
+                label {
+                    width: 100%;
+                    margin-bottom: 10px;
+                    font-weight: bold;
+                }
+
+            }
+
+            button {
+                margin-top: 20px;
+            }
+        }
+    }
+}
