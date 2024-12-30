@@ -2,11 +2,15 @@
     {% for message in messages %}
         {% if "error" in message.tags %}
             <div class="alert alert-danger">
-                {{ message }}
+                <p class="text">
+                    {{ message }}
+                </p>
             </div>
         {% elif "success" in message.tags %}
             <div class="alert alert-success">
-                {{ message }}
+                <p class="text">
+                    {{ message }}
+                </p>
             </div>
         {% endif %}
     {% endfor %}

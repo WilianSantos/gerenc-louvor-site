@@ -4,5 +4,6 @@ from .views import login_with_jwt, my_profile, logout_view
 urlpatterns = [
     path('login/', login_with_jwt, name='login_with_jwt'),
     path('meu-perfil/', my_profile, name='my_profile'),
+    path('alterar-senha/', my_profile, name='change_password'),
     path('sair/', logout_view, name='logout')
 ]

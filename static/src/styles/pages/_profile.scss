@@ -10,16 +10,14 @@
     &__forms {
 
         .nav-tabs {
-            border-bottom: 2px solid rgba(variables.$secondTextColor, 0.6);
-            margin-bottom: 0;
-            padding: 0;
+            border-bottom: 3px solid rgba(variables.$secondTextColor, 0.6);
+            
             .nav-item {
                 border: none;
                 
                 .nav-link {
-                    border: 1px solid transparent;
-                    border-bottom: 2px solid transparent;
-                    padding-bottom: 1em;
+                    border: none;
+                    margin-bottom: -3px;
                     color: variables.$primaryTextColor;
                     
                     &:hover {
@@ -28,7 +26,7 @@
 
                     &.active {
                         color: variables.$secondTextColor;
-                        border-bottom: 2px solid variables.$secondTextColor;
+                        border-bottom: 3px solid variables.$secondTextColor;
                     }
                 }
             }
@@ -36,6 +34,10 @@
 
         .card {
             min-width: 680px;
+
+            @media (max-width: 768px){
+                min-width: 80vw;
+            }
         }
 
         &__profile {

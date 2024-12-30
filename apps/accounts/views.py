@@ -6,6 +6,8 @@ from django.core.signing import Signer
 
 import os
 
+from django.urls import reverse
+
 from .models import CustomUser
 from .forms import LoginForms, ProfileForms, ChangePasswordForms
 from apps.simpleJWT.utils import getting_access_token, make_request_in_api
@@ -70,70 +72,112 @@ def my_profile(request):
     )
 
     change_password_forms = ChangePasswordForms()
+
     form_data = {**member_response, **user_response}
     profile_forms = ProfileForms(form_data=form_data, functions_data=functions_response)
     
     # Atualizando as informaçoes do usuario
     if request.method == 'POST':
-        profile_forms = ProfileForms(request.POST, functions_data=functions_response)
-        if profile_forms.is_valid():
-            # Dados do member/
-            name = profile_forms.cleaned_data['name']
-            availability = profile_forms.cleaned_data['availability']
-            cell_phone = profile_forms.cleaned_data['cell_phone']
-            profile_picture = profile_forms.cleaned_data['profile_picture']
-            function = profile_forms.cleaned_data['function']
-            # Dados do user/
-            username = profile_forms.cleaned_data['username']
-            first_name = profile_forms.cleaned_data['first_name']
-            last_name = profile_forms.cleaned_data['last_name']
-            email = profile_forms.cleaned_data['email']
-            
-            member_data = {
-                "name": name,
-                "availability": availability,
-                "cell_phone": cell_phone,
-                "function": function
-            }
-            user_data = {
-                "username": username,
-                "first_name": first_name,
-                "last_name": last_name,
-                "email": email
-            }
-            
-            picture = None
-            if profile_picture:
-                # salvando imagem no site
-                user.profile_picture = profile_picture
-                user.save()
-                picture = user.profile_picture.path
+        # Identifica o formulário através de um input com propriedade hidden
+        form_type = request.POST.get('form_type')
+        if form_type == 'profile':
+            # Formulario do perfil
+            profile_forms = ProfileForms(request.POST, functions_data=functions_response)
+            if profile_forms.is_valid():
+                # Dados do member/
+                name = profile_forms.cleaned_data['name']
+                availability = profile_forms.cleaned_data['availability']
+                cell_phone = profile_forms.cleaned_data['cell_phone']
+                profile_picture = profile_forms.cleaned_data['profile_picture']
+                function = profile_forms.cleaned_data['function']
+                # Dados do user/
+                username = profile_forms.cleaned_data['username']
+                first_name = profile_forms.cleaned_data['first_name']
+                last_name = profile_forms.cleaned_data['last_name']
+                email = profile_forms.cleaned_data['email']
+                
+                member_data = {
+                    "name": name,
+                    "availability": availability,
+                    "cell_phone": cell_phone,
+                    "function": function
+                }
+                user_data = {
+                    "username": username,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": email
+                }
+                
+                picture = None
+                if profile_picture:
+                    # salvando imagem no site
+                    user.profile_picture = profile_picture
+                    user.save()
+                    picture = user.profile_picture.path
 
-            if picture and os.path.exists(picture):
-                files_data = {"profile_picture": open(picture, 'rb')}
+                if picture and os.path.exists(picture):
+                    files_data = {"profile_picture": open(picture, 'rb')}
+                else:
+                    files_data = None
+
+                # Fazendo Requisições
+                make_request_in_api(
+                    endpoint='user/',
+                    id=user.id,
+                    request_method='PATCH',
+                    payload=user_data,
+                    request=request
+                )
+
+                make_request_in_api(
+                    endpoint='member/',
+                    id=member_id,
+                    request_method='PATCH',
+                    payload=member_data,
+                    request=request,
+                    files=files_data
+                )
+
+                messages.success(request, 'Dados atualizados.')
+                return redirect('my_profile')
+            
+        elif form_type == 'change_password':
+            # Formulario de atualização de senha
+            change_password_forms = ChangePasswordForms(request.POST)
+            if change_password_forms.is_valid():
+                old_password = change_password_forms.cleaned_data['old_password']
+                new_password = change_password_forms.cleaned_data['new_password']
+                
+                data_change_password = {
+                    "old_password": old_password,
+                    "new_password": new_password
+                }
+
+                make_request_in_api(
+                    endpoint='change-password/',
+                    request_method='POST',
+                    request=request,
+                    payload=data_change_password
+                )
+                messages.success(request, 'Dados atualizados.')
+               
+                return redirect('my_profile')
             else:
-                files_data = None
-
-            # Fazendo Requisições
-            make_request_in_api(
-                endpoint='user/',
-                id=user.id,
-                request_method='PATCH',
-                payload=user_data,
-                request=request
-            )
-
-            make_request_in_api(
-                endpoint='member/',
-                id=member_id,
-                request_method='PATCH',
-                payload=member_data,
-                request=request,
-                files=files_data
-            )
-
-            messages.success(request, 'Dados atualizados.')
-            return redirect('my_profile')
+                active_tab = 'change-password'
+                return render(request, 'accounts/my_profile.html', 
+                    {
+                        'member': member_response,
+                        'profile_forms': profile_forms,
+                        "user": user,
+                        'change_password_forms': change_password_forms,
+                        'active_tab': active_tab
+                    }
+                )
+            
+    
+    # Determina a aba ativa
+    active_tab = request.GET.get('tab', 'edit-profile')
 
 
     return render(request, 'accounts/my_profile.html', 
@@ -141,7 +185,8 @@ def my_profile(request):
             'member': member_response,
             'profile_forms': profile_forms,
             "user": user,
-            'change_password_forms': change_password_forms
+            'change_password_forms': change_password_forms,
+            'active_tab': active_tab
         }
     )
 

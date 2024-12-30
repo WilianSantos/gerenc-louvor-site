@@ -53,7 +53,8 @@ class ProfileForms(forms.Form):
             })
     )
     cell_phone = forms.CharField(
-        max_length=15, 
+        max_length=15,
+        min_length=15, 
         required=False, 
         label="Celular", 
         widget=forms.TextInput(attrs={
@@ -105,7 +106,7 @@ class ProfileForms(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'lastName'})
     )
     email = forms.EmailField(
-        required=False,
+        required=True,
         label="E-mail",
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
@@ -158,7 +159,7 @@ class ChangePasswordForms(forms.Form):
             }
         ),
     )
-    password_1=forms.CharField(
+    new_password=forms.CharField(
         label='Senha', 
         required=True, 
         max_length=70,
@@ -169,7 +170,7 @@ class ChangePasswordForms(forms.Form):
             }
         ),
     )
-    password_2=forms.CharField(
+    password_confirmation=forms.CharField(
         label='Confirme sua senha', 
         required=True, 
         max_length=70,
@@ -180,7 +181,17 @@ class ChangePasswordForms(forms.Form):
         ),
     )
 
-    def clean_password_1(self):
-        password_1 = self.cleaned_data.get('password_1')
-        validate_password(password_1)
-        return password_1
+    def clean_new_password(self):
+        new_password = self.cleaned_data.get('new_password')
+        validate_password(new_password)
+        return new_password
+    
+    def clean_password_confirmation(self):
+        new_password = self.cleaned_data.get('new_password')
+        password_confirmation = self.cleaned_data.get('password_confirmation')
+
+        if new_password and password_confirmation:
+            if new_password != password_confirmation:
+                raise forms.ValidationError('As senhas não são iguais')
+            else:
+                return password_confirmation

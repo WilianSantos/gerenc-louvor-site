@@ -8,15 +8,15 @@
                     <ul class="nav nav-tabs">
         
                         <li class="nav-item">
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-edit">Editar Perfil</button>
+                            <button class="nav-link {% if active_tab == 'edit-profile' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-edit">Editar Perfil</button>
                         </li>
         
                         <li class="nav-item">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Alterar Senha</button>
+                            <button class="nav-link {% if active_tab == 'change-password' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-change-password">Alterar Senha</button>
                         </li>
                     </ul>
                     <div class="tab-content pt-2">
-                        <div class="tab-pane fade show active pt-3" id="profile-edit">
+                        <div class="tab-pane fade pt-3 {% if active_tab == 'edit-profile' %}show active{% endif %}" id="profile-edit">
 
                             <!-- Profile Edit Form -->
                             <form class="profile__forms__profile" action="{% url 'my_profile' %}" method="POST" enctype="multipart/form-data" id="form-profile">
@@ -61,24 +61,27 @@
                                     {% include "partials/_alerts_forms.html" %}
                                     
                                 {% endfor %}
-                                
+
+                                {% comment %} Identifica o formulario {% endcomment %}
+                                <input type="hidden" name="form_type" value="profile">
+
                                 <div class="text-center">
-                                    <button type="submit" class="btn button">Salvar</button>
+                                    <button type="submit" form="form-profile" class="btn button">Salvar</button>
                                 </div>
                             </form><!-- End Profile Edit Form -->
                             {% include "partials/_alerts.html" %}
                             
                         </div> 
                         {% comment %} fim do tab-profile {% endcomment %}
-                        <div class="tab-pane fade" id="profile-change-password">
+                        <div class="tab-pane fade {% if active_tab == 'change-password' %}show active{% endif %}" id="profile-change-password">
                             <!-- Change Password Form -->
-                            <form class="profile__forms__change__password" action="{% url 'my_profile' %}" method="POST" enctype="multipart/form-data">
+                            <form class="profile__forms__change__password" id="form-change-password" action="{% url 'change_password' %}" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
 
                                 {% for field in change_password_forms.visible_fields %}
-                                    {% if field.name == "password_1" %}
+                                    {% if field.name == "new_password" %}
                                         <div class="row mb-3">
-                                            <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 title--is-colored">{{ field.label }}</label>
+                                            <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
                                             <div class="col-12">
                                                 <ul>
                                                     <li>
@@ -99,19 +102,26 @@
                                         </div>
                                     {% else %}
                                         <div class="row mb-3">
-                                            <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 title--is-colored">{{ field.label }}</label>
+                                            <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
                                             <div class="col-12">
                                                 {{ field }}
                                             </div>
                                         </div>
                                     {% endif %}
+
+                                    {% include "partials/_alerts_forms.html" %}
+                                    
                                 {% endfor %}
-                                    <div class="text-center">
-                                        <button type="submit" class="btn button">Alterar Senha</button>
-                                    </div>
+
+                                {% comment %} Identifica o formulario {% endcomment %}
+                                <input type="hidden" name="form_type" value="change_password">
+
+                                <div class="text-center">
+                                    <button type="submit" form="form-change-password" class="btn button">Alterar Senha</button>
+                                </div>
                             
                             </form><!-- End Change Password Form -->
-    
+                            {% include "partials/_alerts.html" %}
                         </div>
                         {% comment %} fim do tab mudar de senha {% endcomment %}
                     </div>
