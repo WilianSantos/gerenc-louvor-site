@@ -1,4 +1,4 @@
-from re import I
+from django.contrib.auth.password_validation import validate_password
 from django import forms
 
 
@@ -112,7 +112,18 @@ class ProfileForms(forms.Form):
             'name': 'email',
             'id': 'email-id'
             })
-    )       
+    )
+
+    # Validações
+    def clean_cell_phone(self):
+        cell_phone = self.cleaned_data.get('cell_phone')
+        clean_cell_phone = "".join([digit for digit in cell_phone if digit.isdigit()])
+        return clean_cell_phone
+    
+    def clean_function(self):
+        function = self.cleaned_data.get('function')
+        function_converted_int = [int(item) for item in function]
+        return function_converted_int
 
     # Sobrescrevendo o init para popular os choices com dados da API
     def __init__(self, *args, **kwargs):
@@ -122,19 +133,54 @@ class ProfileForms(forms.Form):
         
         # Populando os choices com os dados da API
         self.fields['function'].choices = [(int(item['id']) , item['functions_name']) for item in functions_data]
-        # Definindo as funções já selecionadas (por exemplo, IDs das funções do membro)
-        # selected_functions = [item for item in form_data['function']]  # ou uma lista de IDs das funções
-        # Configurando os valores iniciais do campo 'function'
         self.initial['function'] = form_data.get('function', [])
 
-        # Preenchendo os campos de texto com os dados recebidos da API
+        # Campos de member
         self.fields['name'].initial = form_data.get('name', '')
         self.fields['cell_phone'].initial = form_data.get('cell_phone', '')
         self.fields['availability'].initial = form_data.get('availability', False)
         self.fields['profile_picture'].initial = form_data.get('profile_picture', '')
-        
         # Campos do usuário 
         self.fields['username'].initial = form_data.get('username', '')
         self.fields['first_name'].initial = form_data.get('first_name', '')
         self.fields['last_name'].initial = form_data.get('last_name', '')
         self.fields['email'].initial = form_data.get('email', '')
+
+
+class ChangePasswordForms(forms.Form):
+    old_password = forms.CharField(
+        label='Senha Antiga', 
+        required=True, 
+        max_length=70,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control',
+            }
+        ),
+    )
+    password_1=forms.CharField(
+        label='Senha', 
+        required=True, 
+        max_length=70,
+        min_length=8,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control'
+            }
+        ),
+    )
+    password_2=forms.CharField(
+        label='Confirme sua senha', 
+        required=True, 
+        max_length=70,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control'
+            }
+        ),
+    )
+
+    def clean_password_1(self):
+        password_1 = self.cleaned_data.get('password_1')
+        validate_password(password_1)
+        return password_1

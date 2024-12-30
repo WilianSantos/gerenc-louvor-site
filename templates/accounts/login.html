@@ -50,13 +50,7 @@
 
                             </div>
                         </div>
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-danger text" role="alert">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+                        {% include "partials/_alerts.html" %}
                     </div>
                 </div>
             </div>

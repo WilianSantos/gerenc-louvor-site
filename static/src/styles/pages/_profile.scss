@@ -1,3 +1,5 @@
+@use '../variables';
+
 .profile {
     display: flex;
     flex-direction: column;
@@ -7,9 +9,35 @@
 
     &__forms {
 
+        .nav-tabs {
+            border-bottom: 2px solid rgba(variables.$secondTextColor, 0.6);
+            margin-bottom: 0;
+            padding: 0;
+            .nav-item {
+                border: none;
+                
+                .nav-link {
+                    border: 1px solid transparent;
+                    border-bottom: 2px solid transparent;
+                    padding-bottom: 1em;
+                    color: variables.$primaryTextColor;
+                    
+                    &:hover {
+                        color: variables.$secondTextColor;
+                    }
+
+                    &.active {
+                        color: variables.$secondTextColor;
+                        border-bottom: 2px solid variables.$secondTextColor;
+                    }
+                }
+            }
+        }
+
         .card {
             min-width: 680px;
         }
+
         &__profile {
             &__img {
                 max-width: 200px;
@@ -17,23 +45,28 @@
                 margin-bottom: 10px;
             }
 
-            .row {
-                display: flex;
-                flex-direction: column;
-                padding-top: 10px;
-                align-items: flex-start;
+        }
 
-                label {
-                    width: 100%;
-                    margin-bottom: 10px;
-                    font-weight: bold;
-                }
+        &__change__password {
 
+        }
+
+        .row {
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+            align-items: flex-start;
+
+            label {
+                width: 100%;
+                margin-bottom: 10px;
+                font-weight: bold;
             }
 
-            button {
-                margin-top: 20px;
-            }
+        }
+
+        .button {
+            margin-top: 20px;
         }
     }
 }

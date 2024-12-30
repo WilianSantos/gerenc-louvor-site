@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.signing import Signer
 
 import os
 
 from .models import CustomUser
-from .forms import LoginForms, ProfileForms
+from .forms import LoginForms, ProfileForms, ChangePasswordForms
 from apps.simpleJWT.utils import getting_access_token, make_request_in_api
 
 
@@ -69,6 +69,7 @@ def my_profile(request):
         request=request
     )
 
+    change_password_forms = ChangePasswordForms()
     form_data = {**member_response, **user_response}
     profile_forms = ProfileForms(form_data=form_data, functions_data=functions_response)
     
@@ -88,15 +89,11 @@ def my_profile(request):
             last_name = profile_forms.cleaned_data['last_name']
             email = profile_forms.cleaned_data['email']
             
-            # Eliminado Caracteres que não sejam digitos
-            clean_cell_phone = "".join([digit for digit in cell_phone if digit.isdigit()])
-            
             member_data = {
                 "name": name,
                 "availability": availability,
-                "cell_phone": clean_cell_phone,
-                # convertendo para inteiro
-                "function": [int(item) for item in function]
+                "cell_phone": cell_phone,
+                "function": function
             }
             user_data = {
                 "username": username,
@@ -118,7 +115,7 @@ def my_profile(request):
                 files_data = None
 
             # Fazendo Requisições
-            patch_user = make_request_in_api(
+            make_request_in_api(
                 endpoint='user/',
                 id=user.id,
                 request_method='PATCH',
@@ -126,7 +123,7 @@ def my_profile(request):
                 request=request
             )
 
-            patch_member = make_request_in_api(
+            make_request_in_api(
                 endpoint='member/',
                 id=member_id,
                 request_method='PATCH',
@@ -135,19 +132,22 @@ def my_profile(request):
                 files=files_data
             )
 
-            functions_response = make_request_in_api(
-                endpoint='member-functions/',
-                request_method='GET',
-                request=request
-            )
-
             messages.success(request, 'Dados atualizados.')
             return redirect('my_profile')
+
 
     return render(request, 'accounts/my_profile.html', 
         {
             'member': member_response,
             'profile_forms': profile_forms,
-            "user": user
+            "user": user,
+            'change_password_forms': change_password_forms
         }
     )
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Login encerrado com sucesso!")
+    return redirect('login_with_jwt')
