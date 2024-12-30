@@ -3,10 +3,15 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.signing import Signer
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.http.response import HttpResponse
 
 import os
 
-from django.urls import reverse
+import requests
+
+from invitations.models import Invitation
 
 from .models import CustomUser
 from .forms import LoginForms, ProfileForms, ChangePasswordForms
@@ -17,6 +22,25 @@ def login_with_jwt(request):
     login_form = LoginForms()
 
     if request.method == 'POST':
+        email_password_recovery = request.POST.get("emailPasswordRecovery")
+        if email_password_recovery:
+            server_url = getattr(settings, "URL_API", None)
+            if not server_url:
+                return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+            server_url += 'request-password-reset/'
+            data = {"email": email_password_recovery}
+            send_email = requests.post(url=server_url, json=data)
+            response = send_email.json()
+            try:
+                # Verifica se já existe um convite para o e-mail
+                invitation = Invitation.objects.get(email=email_password_recovery)
+                invitation.send_invitation(request)
+            except ObjectDoesNotExist:
+                # Se não existir, cria um novo convite
+                invitation = Invitation.create(email_password_recovery)
+                invitation.send_invitation(request)
+            return HttpResponse("Convite enviado com sucesso!")
+
         login_form = LoginForms(request.POST)
         if login_form.is_valid():
             username = login_form.cleaned_data['username']
@@ -161,7 +185,7 @@ def my_profile(request):
                     payload=data_change_password
                 )
                 messages.success(request, 'Dados atualizados.')
-               
+            
                 return redirect('my_profile')
             else:
                 active_tab = 'change-password'

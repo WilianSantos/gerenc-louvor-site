@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.dashboard',
     'apps.simpleJWT',
+
+    'invitations',
 ]
 
 MIDDLEWARE = [
@@ -177,21 +179,14 @@ URL_API = 'http://127.0.0.1:8000/api/praise/'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
-# Validador de senha
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {
-            'min_length': 8,
-        },
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+# Configuração do email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = str(os.getenv('EMAIL_CONFIGURATION'))
+EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_CONFIGURATION_PASSWORD'))
+# str(os.getenv('EMAIL_HOST_PASSWORD'))
+
+
+SITE_ID = 1

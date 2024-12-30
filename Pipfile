@@ -11,6 +11,7 @@ django-redis = "*"
 mysqlclient = "*"
 pillow = "*"
 redis = "*"
+django-invitations = "*"
 
 [dev-packages]
 

@@ -15,7 +15,7 @@
                             <div class="card-body card__form">
 
                                 <div class="pt-4 pb-2">
-                                    <h5 class="card-title text-center pb-0 fs-4 title--small">Login</h5>
+                                    <h5 class="card-title text-center pb-0 fs-4 title--is-colored title--small">Login</h5>
                                     <p class="text-center text">Entre com seu usuário e senha</p>
                                 </div>
 
@@ -44,7 +44,9 @@
                                     </div>
 
                                     <div class="col-12">
-                                        <p class="text--small mb-0">Esqueceu sua senha? <a href="#"> Clique a aqui</a></p>
+                                        <p class="text--small mb-0">Esqueceu sua senha? <a href="#" data-bs-toggle="modal" data-bs-target="#password-recovery"> Clique a aqui</a></p>
+
+                                        
                                     </div>
                                 </form>
 
@@ -59,5 +61,36 @@
 
     </div>
   </main><!-- End #main -->
+
+  <div class="modal fade" id="password-recovery" tabindex="-1">
+    <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title">Enviar email</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p>
+                Digite o e-mail associado ao seu usuario
+            </p>
+            <form class="row g-3" action="{% url 'password_recovery' %}" method="POST">
+                {% csrf_token %}
+                <div class="col-10">
+                    <input type="email" class="form-control" name="emailPasswordRecovery">
+                    {% comment %} Identifica o formulario {% endcomment %}
+                    <input type="hidden" name="form_type" value="email-password-recovery">
+                </div>
+                <div class="col-10 d-flex flex-column align-items-end p-2">
+                    <button type="submit" class="btn btn-success btn-md">Enviar</button>
+                </div>    
+            </form>
+            
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+    </div>
+    </div>
+</div><!-- End Basic Modal-->
 {% endblock contents %}
     
