@@ -30,53 +30,65 @@ def handle_request_errors(request, func, *args, **kwargs):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 401 and "token expired" in e.response.text.lower():
-                new_access_token = refresh_access_token(request, request.user.refresh_token)
+            response_http = e.response.json()
+            code = response_http.get('code')
+            if code == 'token_not_valid' and e.response.status_code == 401:
+                new_access_token = refresh_access_token(request)
                 kwargs['headers'] = {"Authorization": f"Bearer {new_access_token}"}
                 return handle_request_errors(request, func, *args, **kwargs)
-            return log_and_handle_error(request, "Erro HTTP", e)
+            
+            return handling_error(
+                request=request, 
+                message="Erro de conexão", 
+                response_code=e.response.status_code, 
+                response_json=e.response.json()
+            )
         except requests.exceptions.Timeout:
-            return log_and_handle_error(request, "A requisição ao servidor excedeu o tempo limite.")
-        except requests.exceptions.ConnectionError:
-            return log_and_handle_error(request, "Erro de conexão ao servidor.")
+            return messages.error(request, "A requisição ao servidor excedeu o tempo limite.")
+        except requests.exceptions.ConnectionError as e:
+            return handling_error(
+                request=request, 
+                message="Erro de conexão ao servidor.", 
+                response_code=e.response.status_code, 
+                response_json=e.response.json()
+            )
         except Exception as e:
-            return log_and_handle_error(request, "Erro inesperado", e)
+            return handling_error(
+                request=request, 
+                message="Erro inesperado",
+                response_code=e.response.status_code,
+                response_json=e.response.json()
+            )
         
 
 
 # Captura de erro detail do SimpleJWT
-def handling_error(response_json, response_code):
+def handling_error(request, response_json, response_code, message):
     error_code = response_code
     try:
         error_data = response_json
         detail_message = error_data.get('detail', 'Erro desconhecido.')
                     
-        return f'Erro de autenticação: {error_code} - {detail_message}'
+        return messages.error(request, f'{message}: {error_code} - {detail_message}')
         
     except ValueError:
-        return 'A resposta não é um JSON válido.'
+        return messages.error(request, 'A resposta não é um JSON válido.')
+
+
+def refresh_access_token(request):
+    # Recuperando dados e verificando
+    signer = Signer()
+    encrypted_refresh_token = request.user.refresh_token
+    decrypting_refresh_token = signer.unsign_object(encrypted_refresh_token)
+    refresh_token = decrypting_refresh_token  
+    if not refresh_token:
+        messages.error(request, 'Problema na conexão faça o login novamente')
+        return redirect('login_with_jwt')
     
-
-# Pegando token de acesso
-def getting_access_token(request, username, password):
-    server_url = getattr(settings, "URL_API_SIMPLE_JWT", None)
-    if not server_url:
-        return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
-    login_data = {"username": username, "password": password}
-    access_response = handle_request_errors(
-        request=request, 
-        func=requests.post, 
-        url=server_url, 
-        json=login_data, 
-        timeout=10
-    )
-    return access_response
-
-
-def refresh_access_token(request, refresh_token):
     server_url = getattr(settings, "URL_API_SIMPLE_JWT_REFRESH", None)
     if not server_url:
         return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+    
     data = {"refresh": refresh_token}
     response = handle_request_errors(
         request=request,
@@ -109,9 +121,11 @@ def make_request_in_api(endpoint, request_method, request, payload=None, id=None
     encrypted_access_token = request.user.access_token
     decrypting_access_token = signer.unsign_object(encrypted_access_token)
     access_token = decrypting_access_token
+
     encrypted_refresh_token = request.user.refresh_token
     decrypting_refresh_token = signer.unsign_object(encrypted_refresh_token)
     refresh_token = decrypting_refresh_token  
+
     if not access_token and not refresh_token:
         messages.error(request, 'Problema na conexão faça o login novamente')
         return redirect('login_with_jwt')
@@ -229,9 +243,3 @@ def make_request_in_api(endpoint, request_method, request, payload=None, id=None
             )
             return delete_response
         
-
-def log_and_handle_error(request, error_message, exception=None):
-    if exception:
-        logger.error(f"{error_message}: {str(exception)}")
-    
-    return messages.error(request, error_message)

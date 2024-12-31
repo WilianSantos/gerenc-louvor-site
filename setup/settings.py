@@ -175,6 +175,7 @@ URL_API_SIMPLE_JWT = 'http://127.0.0.1:8000/api/token/'
 URL_API_SIMPLE_JWT_REFRESH = 'http://127.0.0.1:8000/api/token/refresh/'
 URL_API = 'http://127.0.0.1:8000/api/praise/'
 
+
 # Usuario customizado
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
@@ -186,7 +187,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = str(os.getenv('EMAIL_CONFIGURATION'))
 EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_CONFIGURATION_PASSWORD'))
-# str(os.getenv('EMAIL_HOST_PASSWORD'))
-
 
 SITE_ID = 1

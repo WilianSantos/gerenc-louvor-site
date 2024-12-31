@@ -4,8 +4,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.signing import Signer
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 import os
 
@@ -15,15 +16,19 @@ from invitations.models import Invitation
 
 from .models import CustomUser
 from .forms import LoginForms, ProfileForms, ChangePasswordForms
-from apps.simpleJWT.utils import getting_access_token, make_request_in_api
+from apps.simpleJWT.utils import make_request_in_api, handle_request_errors
 
 
 def login_with_jwt(request):
     login_form = LoginForms()
 
     if request.method == 'POST':
-        email_password_recovery = request.POST.get("emailPasswordRecovery")
-        if email_password_recovery:
+        form_type = request.POST.get('form_type')
+
+        # Formulario para renovação de senha
+        if form_type == 'password_recovery':
+            email_password_recovery = request.POST.get("emailPasswordRecovery")
+            new_password = request.POST.get('newPassword')
             server_url = getattr(settings, "URL_API", None)
             if not server_url:
                 return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
@@ -31,41 +36,69 @@ def login_with_jwt(request):
             data = {"email": email_password_recovery}
             send_email = requests.post(url=server_url, json=data)
             response = send_email.json()
+            provisional_token = response.get('reset_token')
             try:
-                # Verifica se já existe um convite para o e-mail
-                invitation = Invitation.objects.get(email=email_password_recovery)
-                invitation.send_invitation(request)
-            except ObjectDoesNotExist:
-                # Se não existir, cria um novo convite
-                invitation = Invitation.create(email_password_recovery)
-                invitation.send_invitation(request)
-            return HttpResponse("Convite enviado com sucesso!")
+                validate_password(new_password)
+                
+            except ValidationError as e:
+                message_error = ', '.join(e.messages)
+                messages.error(request, message_error)
+            
+            try:
+                data_password = {
+                    "token": provisional_token,
+                    "new_password": new_password
+                }
+                url = getattr(settings, "URL_API", None) + 'reset-password/'
+                response_reset = requests.post(url=url, json=data_password)
+                response_reset.raise_for_status()
+                messages.success(request, 'Senha atualizada.')
+                logout(request)
+            except requests.exceptions.HTTPError as e:
+                messages.error(request, f'{e.response.text.lower()}')
 
-        login_form = LoginForms(request.POST)
-        if login_form.is_valid():
-            username = login_form.cleaned_data['username']
-            password = login_form.cleaned_data['password']
-            access_response = getting_access_token(request=request, username=username, password=password)
-            user_id = access_response.get('user_id')
-            member_id = access_response.get('member_id')
-            # Criptografando os dados
-            signer = Signer()
-            access_token = access_response.get('access')
-            signed_access_token = signer.sign_object(access_token)
-            refresh_token = access_response.get('refresh')
-            signed_refresh_token = signer.sign_object(refresh_token)
-            #Custom é o banco customizado do user
-            user, _ = CustomUser.objects.get_or_create(
-                id=user_id, 
-                defaults={"username": username, "member_id": member_id}
-            )
-            user.access_token = signed_access_token
-            user.refresh_token = signed_refresh_token
-            user.save()
-            login(request, user)
-            return redirect('dashboard')
-        else:
-            messages.error(request, "Dados inválidos no formulário.")
+        # Formulario para logar
+        if form_type == 'login_with_jwt':
+            login_form = LoginForms(request.POST)
+            if login_form.is_valid():
+                username = login_form.cleaned_data['username']
+                password = login_form.cleaned_data['password']
+                server_url = getattr(settings, "URL_API_SIMPLE_JWT", None)
+                if not server_url:
+                    return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+                login_data = {"username": username, "password": password}
+                access_response = handle_request_errors(
+                    request=request, 
+                    func=requests.post, 
+                    url=server_url, 
+                    json=login_data, 
+                    timeout=10
+                )
+                # Capturar mensagens adicionadas durante a requisição
+                error_messages = [msg.message for msg in messages.get_messages(request) if msg.level_tag == 'error']
+                if error_messages:
+                    return render(request, 'accounts/login.html', {'login_form': login_form})
+                
+                user_id = access_response.get('user_id')
+                member_id = access_response.get('member_id')
+                # Criptografando os dados
+                signer = Signer()
+                access_token = access_response.get('access')
+                signed_access_token = signer.sign_object(access_token)
+                refresh_token = access_response.get('refresh')
+                signed_refresh_token = signer.sign_object(refresh_token)
+                #Custom é o banco customizado do user
+                user, _ = CustomUser.objects.get_or_create(
+                    id=user_id, 
+                    defaults={"username": username, "member_id": member_id}
+                )
+                user.access_token = signed_access_token
+                user.refresh_token = signed_refresh_token
+                user.save()
+                login(request, user)
+                return redirect('dashboard')
+            else:
+                messages.error(request, "Dados inválidos no formulário.")
 
     return render(request, 'accounts/login.html', {'login_form': login_form})
 

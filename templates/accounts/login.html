@@ -39,14 +39,15 @@
                                         {% endif %}
                                     {% endfor %}
 
+                                    {% comment %} Identifica o formulario {% endcomment %}
+                                    <input type="hidden" name="form_type" value="login_with_jwt">
+
                                     <div class="col-12">
                                         <button class="btn button text" type="submit">Entrar</button>
                                     </div>
 
                                     <div class="col-12">
-                                        <p class="text--small mb-0">Esqueceu sua senha? <a href="#" data-bs-toggle="modal" data-bs-target="#password-recovery"> Clique a aqui</a></p>
-
-                                        
+                                        <p class="text--small mb-0">Esqueceu sua senha? <a href="#" data-bs-toggle="modal" data-bs-target="#password-recovery"> Clique a aqui</a></p>        
                                     </div>
                                 </form>
 
@@ -76,15 +77,20 @@
             <form class="row g-3" action="{% url 'password_recovery' %}" method="POST">
                 {% csrf_token %}
                 <div class="col-10">
-                    <input type="email" class="form-control" name="emailPasswordRecovery">
-                    {% comment %} Identifica o formulario {% endcomment %}
-                    <input type="hidden" name="form_type" value="email-password-recovery">
+                    <input type="email" class="form-control" name="emailPasswordRecovery" placeholder="E-mail">
                 </div>
+
+                <div class="col-10">
+                    <input type="password" class="form-control" name="newPassword" placeholder="Nova Senha">
+                </div>
+
+                {% comment %} Identifica o formulario {% endcomment %}
+                <input type="hidden" name="form_type" value="password_recovery">
+
                 <div class="col-10 d-flex flex-column align-items-end p-2">
                     <button type="submit" class="btn btn-success btn-md">Enviar</button>
                 </div>    
             </form>
-            
         </div>
         <div class="modal-footer">
         <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cancelar</button>
