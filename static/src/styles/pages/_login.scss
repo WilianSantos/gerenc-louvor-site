@@ -1,0 +1,36 @@
+@use '../variables';
+
+.login {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    padding: 20px;
+    padding-top: 20vh;
+
+    @media (max-width: 425px) {
+        flex-direction: column;
+    }
+
+    &__form {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid variables.$borderColor;
+        
+        &__label {
+            margin-top: 20px;
+        }
+
+        &__button {
+            margin-top: 20px;
+        }
+
+        &__input {
+            margin-top: 20px;
+        }
+
+        .text--small {
+            margin-top: 10px;
+        }
+    }
+}

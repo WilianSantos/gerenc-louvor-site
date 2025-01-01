@@ -4,7 +4,6 @@
 @use './base';
 
 // Componentes
-@use './components/form';
 @use './components/button';
 
 // Partials
@@ -13,3 +12,6 @@
 // Paginas
 @use './pages/home';
 @use './pages/profile';
+@use './pages/dashboard';
+@use './pages/create-user';
+@use './pages/login';

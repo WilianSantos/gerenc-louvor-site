@@ -1,9 +1,6 @@
 $(document).ready(function () {
-    
-    // $('form').on('submit', function (e) {
-    //     e.preventDefault(); // Evitar envio padrão do formulário
-    // });
 
+    // Seletor multiplo com o TomSelect
     new TomSelect('#function-id',{
         plugins: {
             'clear_button':{
@@ -21,25 +18,26 @@ $(document).ready(function () {
         }
     })
 
-    // const { changePassword } = require('./pages/profile.js')
-    // changePassword()
-    // $('#form-change-password').on('submit', function (e) {
-    //     e.preventDefault();
-    //     const tabPane = $('#profile-change-password');
-    //     const otherTabs = $('.tab-pane'); // Seleciona todas as outras abas
+    // Enviar email 
+    document.getElementById('add-email').addEventListener('click', function() {
+        const emailInput = document.getElementById('email-input');
+        const emailList = document.getElementById('email-list');
+        const emailsField = document.getElementById('emails');
     
-    //     // Remove classes "show" e "active" de todas as abas
-    //     otherTabs.removeClass('show active');
+        if (emailInput.value) {
+            // Adiciona o e-mail à lista visível
+            const li = document.createElement('li');
+            li.textContent = emailInput.value;
+            emailList.appendChild(li);
     
-    //     // Adiciona as classes "show" e "active" à aba desejada
-    //     tabPane.addClass('show active');
+            // Adiciona o e-mail ao campo oculto
+            let emails = emailsField.value ? JSON.parse(emailsField.value) : [];
+            emails.push(emailInput.value);
+            emailsField.value = JSON.stringify(emails);
+    
+            // Limpa o campo de entrada
+            emailInput.value = '';
+        }
+    });
 
-    //     const form = $(this);
-    //     $.ajax({
-    //         url: form.attr('action'),
-    //         type: form.attr('method'),
-    //         data: form.serialize(),
-        
-    //     });
-    // })
 });

@@ -9,11 +9,34 @@
                     <i class="bi bi-list"></i>
                 </button>
             </div>
+            <div class="sub-menu">
+                <Ul class="nav">
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard' %}"  class="nav-link text">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            Página Inicial
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text" data-bs-toggle="dropdown">
+                                <i class="bi bi-file-earmark"></i>
+                                Páginas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-item">
+                                    <a href="{% url 'create_user' %}" class="nav-link text">Cadastro</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </Ul>
+            </div>
             <nav class="collapse navbar-collapse justify-content-end header-dash__nav">
                 <ul class="nav nav-pills d-block d-md-flex">
                     <li class="nav-item fw-bold dropdown header-dash__nav__dropdown">
                         <a class="nav-link d-flex align-items-center pe-0 header-dash__dropdown_profile" href="#" data-bs-toggle="dropdown">
-                            <span class="d-none d-md-block dropdown-toggle-split ps-2 text--big"> {{ member.name }} </span>
+                            <span class="d-none d-md-block dropdown-toggle-split ps-2 text"> {{ member.name }} </span>
                             <i class="bi bi-person-circle"></i>
                         </a><!-- End Profile Iamge Icon -->
                 
@@ -59,6 +82,7 @@
             </nav>
         </div>
     </header>
+   
     <div class="container">
         <main class="main__content">
             {% block dashboard_contents %}{% endblock dashboard_contents %}

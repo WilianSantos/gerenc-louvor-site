@@ -4,18 +4,16 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.signing import Signer
 from django.conf import settings
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-
-import os
 
 import requests
 
 from invitations.models import Invitation
 
 from .models import CustomUser
-from .forms import LoginForms, ProfileForms, ChangePasswordForms
+from .forms import LoginForms, ProfileForms, ChangePasswordForms, CreateUserForms
 from apps.simpleJWT.utils import make_request_in_api, handle_request_errors
 
 
@@ -63,9 +61,11 @@ def login_with_jwt(request):
             if login_form.is_valid():
                 username = login_form.cleaned_data['username']
                 password = login_form.cleaned_data['password']
+
                 server_url = getattr(settings, "URL_API_SIMPLE_JWT", None)
                 if not server_url:
                     return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+                
                 login_data = {"username": username, "password": password}
                 access_response = handle_request_errors(
                     request=request, 
@@ -74,6 +74,7 @@ def login_with_jwt(request):
                     json=login_data, 
                     timeout=10
                 )
+
                 # Capturar mensagens adicionadas durante a requisição
                 error_messages = [msg.message for msg in messages.get_messages(request) if msg.level_tag == 'error']
                 if error_messages:
@@ -107,6 +108,9 @@ def my_profile(request):
     user = CustomUser.objects.get(id=request.user.id)
 
     member_id = user.member_id
+
+    # Determina a aba ativa
+    active_tab = request.GET.get('tab', 'edit-profile')
     
     member_response = make_request_in_api(
         endpoint='member/', 
@@ -114,6 +118,8 @@ def my_profile(request):
         request_method='GET', 
         request=request
     )
+    # Capturar mensagens adicionadas durante a requisição
+                
 
     user_response = make_request_in_api(
         endpoint='user/',
@@ -128,10 +134,29 @@ def my_profile(request):
         request=request
     )
 
+    # Garantindo que caso de algum erro o usuario seja redirecionado
+    if isinstance(member_response, HttpResponseRedirect):
+        return member_response
+    if isinstance(user_response, HttpResponseRedirect):
+        return user_response
+    if isinstance(functions_response, HttpResponseRedirect):
+        return functions_response
+
     change_password_forms = ChangePasswordForms()
 
     form_data = {**member_response, **user_response}
     profile_forms = ProfileForms(form_data=form_data, functions_data=functions_response)
+    error_messages = [msg.message for msg in messages.get_messages(request) if msg.level_tag == 'error']
+    if error_messages:
+        return render(request, 'accounts/my_profile.html', 
+        {
+            'member': member_response,
+            'profile_forms': profile_forms,
+            "user": user,
+            'change_password_forms': change_password_forms,
+            'active_tab': active_tab
+        }
+    )
     
     # Atualizando as informaçoes do usuario
     if request.method == 'POST':
@@ -139,7 +164,7 @@ def my_profile(request):
         form_type = request.POST.get('form_type')
         if form_type == 'profile':
             # Formulario do perfil
-            profile_forms = ProfileForms(request.POST, functions_data=functions_response)
+            profile_forms = ProfileForms(request.POST, request.FILES, functions_data=functions_response)
             if profile_forms.is_valid():
                 # Dados do member/
                 name = profile_forms.cleaned_data['name']
@@ -157,7 +182,7 @@ def my_profile(request):
                     "name": name,
                     "availability": availability,
                     "cell_phone": cell_phone,
-                    "function": function
+                    "function": [int(item) for item in function]
                 }
                 user_data = {
                     "username": username,
@@ -166,35 +191,51 @@ def my_profile(request):
                     "email": email
                 }
                 
-                picture = None
+                files_data = None
                 if profile_picture:
-                    # salvando imagem no site
+                    # Salvando a imagem no site
                     user.profile_picture = profile_picture
                     user.save()
-                    picture = user.profile_picture.path
 
-                if picture and os.path.exists(picture):
-                    files_data = {"profile_picture": open(picture, 'rb')}
-                else:
-                    files_data = None
+                    # Abrindo o arquivo de forma segura
+                    with open(user.profile_picture.path, 'rb') as file:
+                        files_data = {"profile_picture": file}
+
+                        # Fazendo Requisição
+                        patch_response_member = make_request_in_api(
+                            endpoint='member/',
+                            id=member_id,
+                            request_method='PATCH',
+                            payload=member_data,
+                            request=request,
+                            files=files_data
+                        )
+                        # Garantindo que caso de algum erro o usuario seja redirecionado
+                        if isinstance(patch_response_member, HttpResponseRedirect):
+                            return patch_response_member
 
                 # Fazendo Requisições
-                make_request_in_api(
+                patch_response_user = make_request_in_api(
                     endpoint='user/',
                     id=user.id,
                     request_method='PATCH',
                     payload=user_data,
                     request=request
                 )
+                # Garantindo que caso de algum erro o usuario seja redirecionado
+                if isinstance(patch_response_user, HttpResponseRedirect):
+                    return patch_response_user
 
-                make_request_in_api(
+                patch_response_member = make_request_in_api(
                     endpoint='member/',
                     id=member_id,
                     request_method='PATCH',
                     payload=member_data,
                     request=request,
-                    files=files_data
                 )
+                # Garantindo que caso de algum erro o usuario seja redirecionado
+                if isinstance(patch_response_member, HttpResponseRedirect):
+                    return patch_response_member
 
                 messages.success(request, 'Dados atualizados.')
                 return redirect('my_profile')
@@ -211,13 +252,17 @@ def my_profile(request):
                     "new_password": new_password
                 }
 
-                make_request_in_api(
+                response_change_password = make_request_in_api(
                     endpoint='change-password/',
                     request_method='POST',
                     request=request,
                     payload=data_change_password
                 )
-                messages.success(request, 'Dados atualizados.')
+                # Garantindo que caso de algum erro o usuario seja redirecionado
+                if isinstance(response_change_password, HttpResponseRedirect):
+                    return response_change_password
+                
+                messages.success(request, 'Senha atualizada.')
             
                 return redirect('my_profile')
             else:
@@ -231,10 +276,6 @@ def my_profile(request):
                         'active_tab': active_tab
                     }
                 )
-            
-    
-    # Determina a aba ativa
-    active_tab = request.GET.get('tab', 'edit-profile')
 
 
     return render(request, 'accounts/my_profile.html', 
@@ -253,3 +294,10 @@ def logout_view(request):
     logout(request)
     messages.success(request, "Login encerrado com sucesso!")
     return redirect('login_with_jwt')
+
+
+def create_user(request):
+    create_user_forms = CreateUserForms()
+    return render(request, 'accounts/create_user.html', {
+        'create_user_forms': create_user_forms
+    })

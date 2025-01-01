@@ -1,0 +1,46 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block contents %}
+    <div class="container">
+        <main class="create-user">
+            <div class="pt-4 pb-2 create_user__title">
+                <h5 class="text-center pb-0 fs-4 title--is-colored title--small">Crie seu usuário</h5>
+                <p class="text-center text">Preencha os campos para o cadastro</p>
+            </div>
+            <form action="{% url 'create_user' %}" class="create-user__form" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in create_user_forms %}
+                    {% if field.name == "availability" %}
+                        <div class="row">
+                            <label for="{{ field.id_for_label }}" class="create_user__form__label col-lg-5 text--big title--is-colored">{{ field.label }}</label>
+                            <div class="col-lg-7 create-user__from__input">
+                                <div class="form-check form-check-success">
+                                    {{ field }}
+                                    <label class="form-check-label col-md-4 col-lg-3 text" for="{{ field.id_for_label }}">
+                                        Disponivel
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif field.name == "function" %}
+                        <div class="row">
+                            <label for="{{ field.id_for_label }}" class="create_user__form__label col-lg-5 text--big title--is-colored">{{ field.label }}</label>
+                            <div class="col-lg-7 create-user__from__input">
+                                {{ field }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <label for="{{ field.id_for_label }}" class="create_user__form__label col-lg-5 text--big title--is-colored">{{ field.label }}</label>
+                            <div class="col-lg-7 create-user__from__input">
+                                {{ field }}
+                            </div>
+                        </div>
+                    {% endif %}
+                
+                    {% include "partials/_alerts_forms.html" %}
+                {% endfor %}
+            </form>
+        </main>
+    </div>
+{% endblock contents %}

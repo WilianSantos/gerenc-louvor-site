@@ -1,5 +1,70 @@
 {% extends 'shared/base_dashboard.html' %}
 {% load static %}
-{% block panel_contents %}
-        {% include "partials/_alerts.html" %}
-{% endblock panel_contents %}
+{% block dashboard_contents %}
+
+    <main class="dashboard">
+        <section class="dashboard__info">
+            <div>
+                    <h2 class="text--big">
+                            Olá, {{ member.name }}
+                    </h2>
+                    <p class="text">
+                            Nesta página esta reunido todas as informações principais.
+                    </p>
+            </div>
+            {% include "partials/_alerts.html" %}
+        </section>
+
+        <section class="dashboard__contents">
+            <div class="dashboard__contents__menu">
+                <nav class="right-menu-contents">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a href="" class="nav-link text" data-bs-toggle="tab" data-bs-target="#send-email">
+                                <i class="bi bi-envelope-arrow-up"></i>
+                                Convidar Integrante
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="tab-content dashboard__tab">
+                <div class="tab-pane fade tab__send-email p-4" id="send-email">
+                    <form action="{% url 'dashboard' %}" method="POST" enctype="multipart/form-data" id="send-email-form">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12">
+                                <ul id="email-list"></ul>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <input id="email-input" type="email" class="form-control" placeholder="E-mail">
+                            </div>
+                        </div>
+
+                        {% comment %} Identifica o formulario {% endcomment %}
+                        <input type="hidden" name="form_type" value="send_email">
+
+                        <!-- Campo oculto para armazenar a lista de e-mails -->
+                        <input type="hidden" name="emails" id="emails">
+
+                        <div class="text-end">
+                            <button type="button" id="add-email" class="btn btn-success btn-sm text--small">
+                                ++
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" form="send-email-form" class="btn button text">Enviar</button>
+                        </div>
+                    </form>
+                    {% include "partials/_alerts.html" %}
+                </div>
+            </div>
+        </section>
+            
+    </main>
+        
+{% endblock dashboard_contents %}

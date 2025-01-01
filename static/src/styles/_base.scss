@@ -11,10 +11,10 @@
     font-family: "Roboto", serif;
     font-weight: 400;
     font-style: normal;
+    background-color: variables.$menuBackgroundColor;
 }
 
 body {
-    background-color: variables.$bodyBackgroundColor;
     color: variables.$primaryTextColor;
 
 }
@@ -78,7 +78,7 @@ body {
 }
 
 .card-body {
-    box-shadow: 0 0 8px 8px rgba($color: #c7ecee, $alpha: .8)
+    box-shadow: 0 0 5px 5px rgba($color: #c7ecee, $alpha: .8)
 }
 
 .button {
@@ -100,4 +100,8 @@ body {
 
 .alert {
     margin-top: 10px;
+}
+
+.nav-link {
+    color: variables.$primaryTextColor;
 }

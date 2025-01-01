@@ -1,0 +1,58 @@
+@use '../variables';
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &__info {
+        .text--big {  
+            font-weight: bold;
+        }
+    }
+
+    &__contents {
+        display: flex;
+        flex-direction: column;
+
+        &__menu {
+            display: grid;
+            grid-template: "left-menu rigth-menu";
+            border-bottom: 1px solid variables.$borderColor;
+
+            .right-menu-contents {
+                grid-area: rigth-menu;
+
+                .nav-item {
+                    border-left: 1px solid variables.$borderColor;
+                }
+            }
+
+            i {
+                font-size: 1.2em;
+                margin-right: .5em;
+            }
+        }
+    }
+
+    &__tab {
+        display: grid;
+        grid-template: 
+            "menu menu email";
+        grid-template-columns: 2fr 2fr 2fr;
+        row-gap: 2vw;
+        column-gap: 2vw;
+        margin-top: 2vw;
+
+        .tab__send-email {
+            grid-area: email;
+            border: 1px solid variables.$borderColor;
+
+            button {
+                margin-top: 20px;
+            }
+
+           
+        }
+    }
+}

@@ -10,3 +10,11 @@
         color: #fff;
     }
 }
+
+.btn-success {
+    background-color: #055941;
+
+    &:hover {
+        background-color: #03A64A;
+    }
+}

@@ -2,101 +2,89 @@
 {% load static %}
 
 {% block contents %}
-<main>
     <div class="container">
+        <main class="login">
+            <div class="pt-4 pb-2">
+                <h5 class="card-title text-center pb-0 fs-4 title--is-colored title--small">Login</h5>
+                <p class="text-center text">Entre com seu usuário e senha</p>
+            </div>
+            {% include "partials/_alerts.html" %}
+            <form class="login__form" action="{% url 'login_with_jwt' %}" method="POST" id="form-login">
+                {% csrf_token %}
 
-        <section class="min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-4 col-md-6 col-sm-6  d-flex flex-column align-items-center justify-content-center">
-
-                        <div class="card mb-3">
-
-                            <div class="card-body card__form">
-
-                                <div class="pt-4 pb-2">
-                                    <h5 class="card-title text-center pb-0 fs-4 title--is-colored title--small">Login</h5>
-                                    <p class="text-center text">Entre com seu usuário e senha</p>
-                                </div>
-
-                                <form class="row g-3" action="{% url 'login_with_jwt' %}" method="POST" id="form-login">
-                                    {% csrf_token %}
-
-                                    {% for field in login_form %}
-                                        {% if field.name == "username" %}
-                                            <div class="col-12">
-                                                <label for="username" class="form-label text">{{ field.label }}</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="inputGroupPrepend">@</span>
-                                                    {{ field }}
-                                                </div>
-                                            </div>
-                                        {% else %}
-                                            <div class="col-12">
-                                                <label for="password" class="form-label text">{{ field.label }}</label>
-                                                {{ field }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-
-                                    {% comment %} Identifica o formulario {% endcomment %}
-                                    <input type="hidden" name="form_type" value="login_with_jwt">
-
-                                    <div class="col-12">
-                                        <button class="btn button text" type="submit">Entrar</button>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <p class="text--small mb-0">Esqueceu sua senha? <a href="#" data-bs-toggle="modal" data-bs-target="#password-recovery"> Clique a aqui</a></p>        
-                                    </div>
-                                </form>
-
+                {% for field in login_form %}
+                    {% if field.name == "username" %}
+                    <div class="row">
+                        <label for="username" class="col-12 text--big title--is-colored login__form__label">{{ field.label }}</label>
+                        <div class="col-12 login__form__input">
+                            <div class="input-group">
+                                <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                {{ field }}
                             </div>
                         </div>
-                        {% include "partials/_alerts.html" %}
                     </div>
-                </div>
-            </div>
+                    {% else %}
+                    <div class="row">
+                        <label for="password" class="col-12 text--big title--is-colored login__form__label">{{ field.label }}</label>
+                        <div class="col-12 login__form__input">
+                            {{ field }}
+                        </div>
+                    </div>
+                    {% endif %}
 
-        </section>
-
-    </div>
-  </main><!-- End #main -->
-
-  <div class="modal fade" id="password-recovery" tabindex="-1">
-    <div class="modal-dialog">
-    <div class="modal-content">
-        <div class="modal-header">
-        <h5 class="modal-title">Enviar email</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <p>
-                Digite o e-mail associado ao seu usuario
-            </p>
-            <form class="row g-3" action="{% url 'password_recovery' %}" method="POST">
-                {% csrf_token %}
-                <div class="col-10">
-                    <input type="email" class="form-control" name="emailPasswordRecovery" placeholder="E-mail">
-                </div>
-
-                <div class="col-10">
-                    <input type="password" class="form-control" name="newPassword" placeholder="Nova Senha">
-                </div>
+                    {% include "partials/_alerts_forms.html" %}
+                {% endfor %}
 
                 {% comment %} Identifica o formulario {% endcomment %}
-                <input type="hidden" name="form_type" value="password_recovery">
+                <input type="hidden" name="form_type" value="login_with_jwt">
 
-                <div class="col-10 d-flex flex-column align-items-end p-2">
-                    <button type="submit" class="btn btn-success btn-md">Enviar</button>
-                </div>    
+                <div class="col-12 login__form__button">
+                    <button class="btn button text" type="submit">Entrar</button>
+                </div>
+
+                <div class="col-12">
+                    <p class="text--small mb-0">Esqueceu sua senha? <a href="#" data-bs-toggle="modal" data-bs-target="#password-recovery"> Clique a aqui</a></p>        
+                </div>
             </form>
-        </div>
-        <div class="modal-footer">
-        <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cancelar</button>
-        </div>
+        </main>
     </div>
-    </div>
-</div><!-- End Basic Modal-->
+
+    {% comment %} Model {% endcomment %}
+    <div class="modal fade" id="password-recovery" tabindex="-1">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Enviar email</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Digite o e-mail associado ao seu usuario
+                </p>
+                <form class="row g-3" action="{% url 'password_recovery' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="col-10">
+                        <input type="email" class="form-control" name="emailPasswordRecovery" placeholder="E-mail">
+                    </div>
+    
+                    <div class="col-10">
+                        <input type="password" class="form-control" name="newPassword" placeholder="Nova Senha">
+                    </div>
+    
+                    {% comment %} Identifica o formulario {% endcomment %}
+                    <input type="hidden" name="form_type" value="password_recovery">
+    
+                    <div class="col-10 d-flex flex-column align-items-end p-2">
+                        <button type="submit" class="btn btn-success btn-md">Enviar</button>
+                    </div>    
+                </form>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+        </div>
+    </div><!-- End Basic Modal-->
+  
 {% endblock contents %}
     

@@ -1,6 +1,8 @@
 from django.contrib.auth.password_validation import validate_password
 from django import forms
 
+from .models import CustomUser
+
 
 class LoginForms(forms.Form):
     username=forms.CharField(
@@ -133,7 +135,7 @@ class ProfileForms(forms.Form):
         super().__init__(*args, **kwargs)
         
         # Populando os choices com os dados da API
-        self.fields['function'].choices = [(int(item['id']) , item['functions_name']) for item in functions_data]
+        self.fields['function'].choices = [(str(item['id']) , item['functions_name']) for item in functions_data]
         self.initial['function'] = form_data.get('function', [])
 
         # Campos de member
@@ -195,3 +197,93 @@ class ChangePasswordForms(forms.Form):
                 raise forms.ValidationError('As senhas não são iguais')
             else:
                 return password_confirmation
+            
+
+class CreateUserForms(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        label="Nome de Usuário",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'username'})
+    )
+    first_name = forms.CharField(
+        max_length=150,
+        required=False,
+        label="Primeiro Nome",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'firstName'})
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        required=False,
+        label="Último Nome",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'lastName'})
+    )
+    email = forms.EmailField(
+        required=True,
+        label="E-mail",
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'name': 'email',
+            'id': 'email-id'
+            })
+    )
+    #campo para Member
+    cell_phone = forms.CharField(
+        max_length=15,
+        min_length=15, 
+        required=False, 
+        label="Celular", 
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'name': 'cellPhone',
+            'id': 'cell_phone-id',
+            'type': 'tel'
+            })
+    )
+    
+    password=forms.CharField(
+        label='Senha', 
+        required=True, 
+        max_length=70,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'password-id',
+            }
+        ),
+    )
+    password_confirmation=forms.CharField(
+        label='Confirme sua senha', 
+        required=True, 
+        max_length=70,
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'password_confirmation-id',
+            }
+        ),
+    )
+
+    # Validações
+    def clean_cell_phone(self):
+        cell_phone = self.cleaned_data.get('cell_phone')
+        clean_cell_phone = "".join([digit for digit in cell_phone if digit.isdigit()])
+        return clean_cell_phone
+    
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if CustomUser.objects.filter(username=username).exists():
+            raise forms.ValidationError('Usuário já existe')
+            
+            
+    def clean_password_confirmation(self):
+        password = self.cleaned_data.get('password')
+        password_confirmation = self.cleaned_data.get('password_confirmation')
+
+        if password and password_confirmation:
+            if password != password_confirmation:
+                raise forms.ValidationError('Senhas não são iguais')
+            else:
+                return password_confirmation
+        

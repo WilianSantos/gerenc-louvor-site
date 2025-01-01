@@ -1,12 +1,12 @@
 {% if messages %}
     {% for message in messages %}
-        {% if "error" in message.tags %}
+        {% if forloop.last and "error" in message.tags %}
             <div class="alert alert-danger">
                 <p class="text">
                     {{ message }}
                 </p>
             </div>
-        {% elif "success" in message.tags %}
+        {% elif forloop.last and "success" in message.tags %}
             <div class="alert alert-success">
                 <p class="text">
                     {{ message }}
