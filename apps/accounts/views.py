@@ -296,7 +296,7 @@ def logout_view(request):
     return redirect('login_with_jwt')
 
 
-def create_user(request):
+def create_user(request, invite_key=None):
     create_user_forms = CreateUserForms()
     return render(request, 'accounts/create_user.html', {
         'create_user_forms': create_user_forms

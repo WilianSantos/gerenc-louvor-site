@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = str(os.getenv('SECRET_KEY'))
+SECRET_KEY = str(os.getenv('SECRET_KEY_DJANGO'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -189,3 +189,8 @@ EMAIL_HOST_USER = str(os.getenv('EMAIL_CONFIGURATION'))
 EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_CONFIGURATION_PASSWORD'))
 
 SITE_ID = 1
+
+
+# Invitations - configurção do link para criar o usuario
+INVITATIONS_INVITE_EXPIRY = 5  # Expiração do convite em dias
+
