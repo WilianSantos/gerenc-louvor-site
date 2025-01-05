@@ -1,20 +1,20 @@
-from django.shortcuts import render, redirect
+import re
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.signing import Signer
 from django.conf import settings
-from django.http.response import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 import requests
 
-from invitations.models import Invitation
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
-from .models import CustomUser
+from .models import CustomUser, TokenRecord
 from .forms import LoginForms, ProfileForms, ChangePasswordForms, CreateUserForms
-from apps.simpleJWT.utils import make_request_in_api, handle_request_errors
+from apps.simpleJWT.utils import make_request_in_api, handle_request_errors, error_checking
 
 
 def login_with_jwt(request):
@@ -26,15 +26,23 @@ def login_with_jwt(request):
         # Formulario para renovação de senha
         if form_type == 'password_recovery':
             email_password_recovery = request.POST.get("emailPasswordRecovery")
-            new_password = request.POST.get('newPassword')
+
             server_url = getattr(settings, "URL_API", None)
             if not server_url:
                 return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
             server_url += 'request-password-reset/'
+            
             data = {"email": email_password_recovery}
-            send_email = requests.post(url=server_url, json=data)
-            response = send_email.json()
-            provisional_token = response.get('reset_token')
+
+            token_response = handle_request_errors(
+                func=requests.post,
+                url=server_url,
+                json=data
+            )
+            # Verificação dos erros
+            error_checking(request=request, response=token_response)
+
+            new_password = request.POST.get('newPassword')
             try:
                 validate_password(new_password)
                 
@@ -42,19 +50,29 @@ def login_with_jwt(request):
                 message_error = ', '.join(e.messages)
                 messages.error(request, message_error)
             
-            try:
-                data_password = {
-                    "token": provisional_token,
-                    "new_password": new_password
-                }
-                url = getattr(settings, "URL_API", None) + 'reset-password/'
-                response_reset = requests.post(url=url, json=data_password)
-                response_reset.raise_for_status()
-                messages.success(request, 'Senha atualizada.')
-                logout(request)
-            except requests.exceptions.HTTPError as e:
-                messages.error(request, f'{e.response.text.lower()}')
+            token_response = token_response.get('data')
+            provisional_token = token_response.get('reset_token')
+            
+            data_password = {
+                "token": provisional_token,
+                "new_password": new_password
+            }
+            url = getattr(settings, "URL_API", None) + 'reset-password/'
+            
+            reset_password_response = handle_request_errors(
+                func=requests.post,
+                url=url,
+                json=data_password
+            )
+            # Verificação dos erros
+            error_checking(request=request, response=reset_password_response)
 
+            messages.success(request, 'Senha atualizada.')
+        
+            #Garantindo que o usuario no cliente acesse com a nova senha para receber um novo token
+            logout(request)
+                        
+                
         # Formulario para logar
         if form_type == 'login_with_jwt':
             login_form = LoginForms(request.POST)
@@ -74,21 +92,24 @@ def login_with_jwt(request):
                     json=login_data, 
                     timeout=10
                 )
+                # Verificação dos erros
+                error_checking(request=request, response=access_response)
+                access_response = access_response.get('data')
 
-                # Capturar mensagens adicionadas durante a requisição
-                error_messages = [msg.message for msg in messages.get_messages(request) if msg.level_tag == 'error']
-                if error_messages:
-                    return render(request, 'accounts/login.html', {'login_form': login_form})
-                
+                if not access_response:
+                    return redirect('login_with_jwt')
+
                 user_id = access_response.get('user_id')
                 member_id = access_response.get('member_id')
+
                 # Criptografando os dados
                 signer = Signer()
                 access_token = access_response.get('access')
                 signed_access_token = signer.sign_object(access_token)
                 refresh_token = access_response.get('refresh')
                 signed_refresh_token = signer.sign_object(refresh_token)
-                #Custom é o banco customizado do user
+
+                
                 user, _ = CustomUser.objects.get_or_create(
                     id=user_id, 
                     defaults={"username": username, "member_id": member_id}
@@ -98,8 +119,7 @@ def login_with_jwt(request):
                 user.save()
                 login(request, user)
                 return redirect('dashboard')
-            else:
-                messages.error(request, "Dados inválidos no formulário.")
+            
 
     return render(request, 'accounts/login.html', {'login_form': login_form})
 
@@ -109,7 +129,7 @@ def my_profile(request):
 
     member_id = user.member_id
 
-    # Determina a aba ativa
+    # Determina a aba ativa no frontend
     active_tab = request.GET.get('tab', 'edit-profile')
     
     member_response = make_request_in_api(
@@ -118,50 +138,43 @@ def my_profile(request):
         request_method='GET', 
         request=request
     )
-    # Capturar mensagens adicionadas durante a requisição
-                
-
+    # Verificação dos erros
+    error_checking(request=request, response=member_response)
+    member_response = member_response.get('data')
+            
     user_response = make_request_in_api(
         endpoint='user/',
         id=user.id,
         request_method='GET',
         request=request
     )
+    # Verificações dos erros
+    error_checking(request=request, response=user_response)
+    user_response = user_response.get('data')
 
     functions_response = make_request_in_api(
         endpoint='member-functions/',
         request_method='GET',
         request=request
     )
+    # Verificação dos erros
+    error_checking(request=request, response=functions_response)
+    functions_response = functions_response.get('data')
 
-    # Garantindo que caso de algum erro o usuario seja redirecionado
-    if isinstance(member_response, HttpResponseRedirect):
-        return member_response
-    if isinstance(user_response, HttpResponseRedirect):
-        return user_response
-    if isinstance(functions_response, HttpResponseRedirect):
-        return functions_response
+    if not functions_response or not user_response or not member_response:
+        logout(request)
+        return redirect('login_with_jwt')
 
     change_password_forms = ChangePasswordForms()
 
     form_data = {**member_response, **user_response}
     profile_forms = ProfileForms(form_data=form_data, functions_data=functions_response)
-    error_messages = [msg.message for msg in messages.get_messages(request) if msg.level_tag == 'error']
-    if error_messages:
-        return render(request, 'accounts/my_profile.html', 
-        {
-            'member': member_response,
-            'profile_forms': profile_forms,
-            "user": user,
-            'change_password_forms': change_password_forms,
-            'active_tab': active_tab
-        }
-    )
-    
+
     # Atualizando as informaçoes do usuario
     if request.method == 'POST':
         # Identifica o formulário através de um input com propriedade hidden
         form_type = request.POST.get('form_type')
+
         if form_type == 'profile':
             # Formulario do perfil
             profile_forms = ProfileForms(request.POST, request.FILES, functions_data=functions_response)
@@ -182,7 +195,7 @@ def my_profile(request):
                     "name": name,
                     "availability": availability,
                     "cell_phone": cell_phone,
-                    "function": [int(item) for item in function]
+                    "function": function
                 }
                 user_data = {
                     "username": username,
@@ -197,11 +210,9 @@ def my_profile(request):
                     user.profile_picture = profile_picture
                     user.save()
 
-                    # Abrindo o arquivo de forma segura
                     with open(user.profile_picture.path, 'rb') as file:
                         files_data = {"profile_picture": file}
 
-                        # Fazendo Requisição
                         patch_response_member = make_request_in_api(
                             endpoint='member/',
                             id=member_id,
@@ -210,11 +221,17 @@ def my_profile(request):
                             request=request,
                             files=files_data
                         )
-                        # Garantindo que caso de algum erro o usuario seja redirecionado
-                        if isinstance(patch_response_member, HttpResponseRedirect):
-                            return patch_response_member
+                else:
+                    patch_response_member = make_request_in_api(
+                    endpoint='member/',
+                    id=member_id,
+                    request_method='PATCH',
+                    payload=member_data,
+                    request=request,
+                )
+                # Verificando erro da requisição
+                error_checking(request=request, response=patch_response_member)
 
-                # Fazendo Requisições
                 patch_response_user = make_request_in_api(
                     endpoint='user/',
                     id=user.id,
@@ -222,20 +239,8 @@ def my_profile(request):
                     payload=user_data,
                     request=request
                 )
-                # Garantindo que caso de algum erro o usuario seja redirecionado
-                if isinstance(patch_response_user, HttpResponseRedirect):
-                    return patch_response_user
-
-                patch_response_member = make_request_in_api(
-                    endpoint='member/',
-                    id=member_id,
-                    request_method='PATCH',
-                    payload=member_data,
-                    request=request,
-                )
-                # Garantindo que caso de algum erro o usuario seja redirecionado
-                if isinstance(patch_response_member, HttpResponseRedirect):
-                    return patch_response_member
+                # Verificando erro da requisição
+                error_checking(request=request, response=patch_response_user)
 
                 messages.success(request, 'Dados atualizados.')
                 return redirect('my_profile')
@@ -258,9 +263,8 @@ def my_profile(request):
                     request=request,
                     payload=data_change_password
                 )
-                # Garantindo que caso de algum erro o usuario seja redirecionado
-                if isinstance(response_change_password, HttpResponseRedirect):
-                    return response_change_password
+                # Verificando erro da requisição
+                error_checking(request=request, response=response_change_password)
                 
                 messages.success(request, 'Senha atualizada.')
             
@@ -296,8 +300,98 @@ def logout_view(request):
     return redirect('login_with_jwt')
 
 
-def create_user(request, invite_key=None):
+def create_user(request, signed_data):
+    auth_s = URLSafeTimedSerializer(settings.SECRET_KEY)
+    # 1 dias de validade (1 dias * 24 horas * 60 minutos * 60 segundos)
+    # Tempo máximo para o token ser válido (por exemplo, 1 dia)
+    max_age_seconds = 1 * 24 * 60 * 60
+
+    try:
+        # Decodifica os dados assinados
+        decoded_data = auth_s.loads(signed_data, salt="email-invite", max_age=max_age_seconds)
+        
+        # Recupera os parâmetros
+        email = decoded_data.get("email")
+        token = decoded_data.get("token")
+
+        token_record = TokenRecord.objects.filter(temporary_token=signed_data).first()
+
+        if not token_record:
+            messages.error(request, 'Este token é invalido.')
+            return redirect('login_with_jwt')
+
+        if token_record.is_used:
+            messages.error(request, 'Este token já foi usado.')
+            return redirect('login_with_jwt')
+
+    except SignatureExpired:
+        messages.error(request, "Este link expirou. Você precisa de outro link")
+        return redirect('login_with_jwt')
+    except BadSignature:
+        messages.error(request, "Este link não é válido.")
+        return redirect('login_with_jwt')
+    
     create_user_forms = CreateUserForms()
+
+    if request.method == 'POST':
+        create_user_forms = CreateUserForms(request.POST)
+        if create_user_forms.is_valid():
+            username = create_user_forms.cleaned_data['username']
+            first_name = create_user_forms.cleaned_data['first_name']
+            last_name = create_user_forms.cleaned_data['last_name']
+            password = create_user_forms.cleaned_data['password']
+            cell_phone = create_user_forms.cleaned_data['cell_phone']
+
+            data = {
+                "first_name": first_name,
+                "last_name": last_name,
+                "username": username,
+                "password": password,
+                "email": email,
+                "cell_phone": cell_phone,
+                "token": token
+            }
+            
+            server_url = getattr(settings, "URL_API", None)
+            if not server_url:
+                return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')      
+
+            server_url += 'register-user/'
+            create_user_response = handle_request_errors(
+                request=request,
+                func=requests.post,
+                url=server_url, 
+                json=data, 
+                timeout=10
+            )
+            # Verificando erro da requisição
+            error_checking(request=request, response=create_user_response)
+            create_user_response = create_user_response.get('data')
+            if not create_user_response:
+                return redirect('login_with_jwt')
+            
+            user_id = create_user_response.get('user_id')
+            member_id = create_user_response.get('member_id')
+            
+            if not CustomUser.objects.filter(username=username).exists():
+                CustomUser.objects.create_user(
+                    id=user_id,
+                    email=email, 
+                    password=password, 
+                    first_name=first_name,
+                    last_name=last_name,
+                    username=username,
+                    member_id=member_id
+                )
+
+            # Garantindo que o token não seja usado
+            token_record.is_used = True
+            token_record.save()
+
+            messages.success(request, 'Usuário criado, entre com seu usuário e senha.')
+            return redirect('login_with_jwt')
+
     return render(request, 'accounts/create_user.html', {
-        'create_user_forms': create_user_forms
+        'create_user_forms': create_user_forms,
+        'signed_data': signed_data
     })

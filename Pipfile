@@ -12,6 +12,7 @@ mysqlclient = "*"
 pillow = "*"
 redis = "*"
 django-invitations = "*"
+itsdangerous = "*"
 
 [dev-packages]
 

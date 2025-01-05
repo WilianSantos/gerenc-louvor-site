@@ -50,8 +50,6 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.dashboard',
     'apps.simpleJWT',
-
-    'invitations',
 ]
 
 MIDDLEWARE = [
@@ -185,12 +183,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False  
 EMAIL_HOST_USER = str(os.getenv('EMAIL_CONFIGURATION'))
 EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_CONFIGURATION_PASSWORD'))
-
-SITE_ID = 1
-
-
-# Invitations - configurção do link para criar o usuario
-INVITATIONS_INVITE_EXPIRY = 5  # Expiração do convite em dias
-
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

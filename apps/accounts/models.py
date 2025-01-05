@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MaxLengthValidator
 
 class CustomUser(AbstractUser):
     member_id = models.IntegerField(null=False, blank=False)  
@@ -14,3 +15,9 @@ class CustomUser(AbstractUser):
         null=False,  
         editable=False,
     )
+
+
+class TokenRecord(models.Model):
+    temporary_token = models.TextField(editable=False)
+    email = models.EmailField()
+    is_used = models.BooleanField(default=False, editable=False)

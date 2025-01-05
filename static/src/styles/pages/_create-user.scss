@@ -4,14 +4,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10vw;
+    padding: 5vw;
 
     @media (max-width: 768px) {
         flex-direction: column;
+        padding: 2vw;
+    }
+
+    @media (max-width: 425px) {
+        padding: 0;
     }
 
     &__title {
-        margin-left: 10vw;
+        margin-left: 5vw;
     }
 
     &__form {
@@ -19,10 +24,20 @@
         padding: 20px;
 
 
+        &__content {
+            margin-top: 30px;
+        }
+
         &__label {
+            margin-bottom: 10px;
+
             @media (max-width: 425px) {
                 width: 100%;
             }
+        }
+
+        &__button {
+            margin-top: 30px;
         }
 
         &__input {
@@ -31,14 +46,5 @@
             }
         }
 
-        .row {
-            margin-top: 30px;
-
-            @media (max-width: 425px) {
-                display: flex;
-                flex-direction: column;
-
-            }
-        }
     }
 }

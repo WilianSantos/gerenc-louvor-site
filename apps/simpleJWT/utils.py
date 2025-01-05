@@ -8,93 +8,105 @@ import requests
 from apps.accounts.models import CustomUser
 
 
+def error_checking(request, response):
+    if response.get('status_code') != 200:
+        if response.get('token_not_valid'):
+            messages.error(request, response.get('token_not_valid'))
+            redirect('login_with_jwt')
+        
+        elif response.get('detail_error'):
+            messages.error(request, response.get('detail_error'))
+
+
 def handle_request_errors(request, func, *args, **kwargs):
-        """
-        Função utilitária para tratar erros de requisição.
-        :param request: Objeto request do Django.
-        :param func: Função de requisição (ex: requests.get, requests.post).
-        :param args: Argumentos posicionais para a função.
-        :param kwargs: Argumentos nomeados para a função.
-        :return: Resposta da requisição ou None em caso de erro.
+    """
+    Função utilitária para tratar erros de requisição.
+    :param request: Objeto request do Django.
+    :param func: Função de requisição (ex: requests.get, requests.post).
+    :param args: Argumentos posicionais para a função.
+    :param kwargs: Argumentos nomeados para a função.
+    :return: Resposta da requisição ou None em caso de erro.
 
-        # EX:
-            response = handle_request_errors(
-                request, requests.get, url=server_url, headers=headers, timeout=10
-            )
-        """
-        try:
-            response = func(*args, **kwargs)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.HTTPError as e:
-            response_http = e.response.json()
-            code = response_http.get('code')
+    # EX:
+        response = handle_request_errors(
+            request, requests.get, url=server_url, headers=headers, timeout=10
+        )
+    """
+    try:
+        response = func(*args, **kwargs)
+        response.raise_for_status()
+        return {"data": response.json(), "status_code": 200}
 
-            
-            if code == 'token_not_valid' and e.response.status_code == 401:
-                # Access token expirado
-                if "messages" in response_http:
-                    token_type = response_http["messages"][0].get("token_type")
-                    token_class = response_http["messages"][0].get("token_class")
-                    if token_type == "access" and token_class == "AccessToken":
-                        new_access_token = refresh_access_token(request)
-                        if not new_access_token:
-                            return redirect('login_with_jwt')
-                        kwargs['headers'] = {"Authorization": f"Bearer {new_access_token}"}
-                        
-                        try:
-                            response_with_new_access = func(*args, **kwargs)
-                            response_with_new_access.raise_for_status()
-                            return response_with_new_access.json()
-                        except requests.exceptions.HTTPError as excp:
-                            message_error = 'Erro ao renovar o token de acesso. Faça login novamente.\n'
-                            handling_error(
-                                request=request, 
-                                message=message_error,
-                                response_code=excp.response.status_code,
-                                response_json=excp.response.json()
-                            )
-                            return redirect('login_with_jwt')
-                        
-            # Token Refresh expirado
-            elif code == 'refresh_token_not_valid' and e.response.status_code == 401:
-                message_error = 'Erro ao renovar o token de acesso. Faça login novamente.\n'
-                handling_error(
-                    request=request, 
-                    message=message_error,
-                    response_code=e.response.status_code,
-                    response_json=e.response.json()
-                )
-                return redirect('login_with_jwt')
-            
-            # Erros de Conexão
-            return handling_error(
-                request=request, 
-                message="Erro de conexão", 
-                response_code=e.response.status_code, 
-                response_json=e.response.json()
+    except requests.exceptions.HTTPError as e:
+        response_http = e.response.json()
+        code = response_http.get('code')
+
+        if code == 'token_not_valid' and e.response.status_code == 401:
+            # Access token expirado
+            if "messages" in response_http:
+                token_type = response_http["messages"][0].get("token_type")
+                token_class = response_http["messages"][0].get("token_class")
+                if token_type == "access" and token_class == "AccessToken":
+                    new_access_token = refresh_access_token(request)
+                    if not new_access_token:
+                        return {"redirect": redirect('login_with_jwt'), "status_code": 401}
+                    kwargs['headers'] = {"Authorization": f"Bearer {new_access_token}"}
+
+                    try:
+                        response_with_new_access = func(*args, **kwargs)
+                        response_with_new_access.raise_for_status()
+                        return {"data": response_with_new_access.json(), "status_code": 200}
+
+                    except requests.exceptions.HTTPError as excp:
+                        message_error = 'Erro ao renovar o token de acesso. Faça login novamente.\n'
+                        error = handling_error(
+                            message=message_error,
+                            response_json=excp.response.json(),
+                            response_status=excp.response.status_code
+                        )
+                        return {"token_not_valid": error, "status_code": excp.response.status_code}
+
+        # Token Refresh expirado
+        elif code == 'refresh_token_not_valid' and e.response.status_code == 401:
+            message_error = 'Erro ao renovar o token de acesso. Faça login novamente.'
+            error = handling_error(
+                message=message_error,
+                response_json=e.response.json(),
+                response_status=401
             )
-        except requests.exceptions.Timeout:
-            return messages.error(request, "A requisição ao servidor excedeu o tempo limite.")
-        except requests.exceptions.ConnectionError:
-            return messages.error(request, "Erro de conexão ao servidor.")
-        except Exception:
-            return handling_error(
-                request=request, 
-                message="Erro inesperado"
+            return {"token_not_valid": error, "status_code": 401}
+
+        if e.response.status_code == 400:
+            error = handling_error(
+                message="Erro", 
+                response_json=e.response.json(),
+                response_status=e.response.status_code
             )
+            return {"detail_error": error, "status_code": e.response.status_code}
+
+        # Erros de Conexão
+        error = handling_error(
+            message="Erro de conexão", 
+            response_json=e.response.json(),
+            response_status=e.response.status_code
+        )
+        return {"detail_error": error, "status_code": e.response.status_code}
+    except requests.exceptions.Timeout:
+        return {"detail_error": "A requisição ao servidor excedeu o tempo limite. Tente novamente", "status_code": 408}
+    except requests.exceptions.ConnectionError:
+        return {"detail_error": "Erro de conexão ao servidor. Tente novamente mais tarde", "status_code": 503}
+    except Exception:
+        return {"detail_error": "Erro inesperado", "status_code": 500}
+
 
 
 # Captura de erro detail do SimpleJWT
-def handling_error(request, response_json=None, response_code=None, message=None):
-    error_code = response_code
+def handling_error(response_json, message, response_status):
     error_data = response_json
+    status = response_status
 
-    if error_data:
-        detail_message = error_data.get('detail', 'Erro desconhecido.')
-        return messages.error(request, f'{message}: {error_code} - {detail_message}')
-    
-    return messages.error(request, message)
+    detail_message = error_data.get('detail', 'Erro desconhecido.')
+    return f'{message}: - {detail_message} - {status}'
 
 
 def refresh_access_token(request):

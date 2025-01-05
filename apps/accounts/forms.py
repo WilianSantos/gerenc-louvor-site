@@ -218,15 +218,6 @@ class CreateUserForms(forms.Form):
         label="Último Nome",
         widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'lastName'})
     )
-    email = forms.EmailField(
-        required=True,
-        label="E-mail",
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'name': 'email',
-            'id': 'email-id'
-            })
-    )
     #campo para Member
     cell_phone = forms.CharField(
         max_length=15,
@@ -275,6 +266,8 @@ class CreateUserForms(forms.Form):
         username = self.cleaned_data.get('username')
         if CustomUser.objects.filter(username=username).exists():
             raise forms.ValidationError('Usuário já existe')
+        else:
+            return username
             
             
     def clean_password_confirmation(self):

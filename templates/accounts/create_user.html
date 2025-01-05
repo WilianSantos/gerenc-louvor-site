@@ -3,43 +3,27 @@
 {% block contents %}
     <div class="container">
         <main class="create-user">
-            <div class="pt-4 pb-2 create_user__title">
+            <div class="pt-4 pb-2 create-user__title">
                 <h5 class="text-center pb-0 fs-4 title--is-colored title--small">Crie seu usuário</h5>
                 <p class="text-center text">Preencha os campos para o cadastro</p>
             </div>
-            <form action="{% url 'create_user' %}" class="create-user__form" method="POST" enctype="multipart/form-data">
+            <form action="{% url 'create_user' signed_data %}" class="create-user__form" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% for field in create_user_forms %}
-                    {% if field.name == "availability" %}
-                        <div class="row">
-                            <label for="{{ field.id_for_label }}" class="create_user__form__label col-lg-5 text--big title--is-colored">{{ field.label }}</label>
-                            <div class="col-lg-7 create-user__from__input">
-                                <div class="form-check form-check-success">
-                                    {{ field }}
-                                    <label class="form-check-label col-md-4 col-lg-3 text" for="{{ field.id_for_label }}">
-                                        Disponivel
-                                    </label>
-                                </div>
-                            </div>
+                    
+                    <div class="create-user__form__content row">
+                        <label for="{{ field.id_for_label }}" class="create-user__form__label col-12 text--big title--is-colored">{{ field.label }}</label>
+                        <div class="create-user__from__input col-12">
+                            {{ field }}
                         </div>
-                    {% elif field.name == "function" %}
-                        <div class="row">
-                            <label for="{{ field.id_for_label }}" class="create_user__form__label col-lg-5 text--big title--is-colored">{{ field.label }}</label>
-                            <div class="col-lg-7 create-user__from__input">
-                                {{ field }}
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="row">
-                            <label for="{{ field.id_for_label }}" class="create_user__form__label col-lg-5 text--big title--is-colored">{{ field.label }}</label>
-                            <div class="col-lg-7 create-user__from__input">
-                                {{ field }}
-                            </div>
-                        </div>
-                    {% endif %}
+                    </div>
+                    
                 
                     {% include "partials/_alerts_forms.html" %}
                 {% endfor %}
+                <div class="col-12 create-user__form__button">
+                    <button class="btn button text" type="submit">Entrar</button>
+                </div>
             </form>
         </main>
     </div>

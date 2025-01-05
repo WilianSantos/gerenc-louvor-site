@@ -11,12 +11,11 @@
     font-family: "Roboto", serif;
     font-weight: 400;
     font-style: normal;
-    background-color: variables.$menuBackgroundColor;
 }
 
 body {
     color: variables.$primaryTextColor;
-
+    background-color: variables.$menuBackgroundColor;
 }
 
 .text--big {
