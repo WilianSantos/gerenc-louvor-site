@@ -12,8 +12,7 @@ class LoginForms(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'id': 'username',
-                'name': 'username',
+                'id': 'username-id',
                 'placeholder': 'Usuário',
             }
         )
@@ -25,8 +24,7 @@ class LoginForms(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
-                'id': 'password',
-                'name': 'password',
+                'id': 'password-id',
                 'placeholder': 'Senha',
             }
         )
@@ -41,7 +39,6 @@ class ProfileForms(forms.Form):
         label="Nome", 
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'name': "name",
             'id': 'name-id'
         })
     )
@@ -50,7 +47,6 @@ class ProfileForms(forms.Form):
         label="Disponibilidade", 
         widget=forms.CheckboxInput(attrs={
             'class': 'form-check-input',
-            'name': 'availability',
             'id': 'availability-id'
             })
     )
@@ -71,8 +67,7 @@ class ProfileForms(forms.Form):
         label="Foto de Perfil", 
         widget=forms.FileInput(attrs={
             "class": "form-control form-control",
-            "id": "profile_picture-id",
-            'name': 'profilePicture'
+            "id": "profile_picture-id"
         })
     )
     
@@ -83,8 +78,7 @@ class ProfileForms(forms.Form):
         widget=forms.SelectMultiple(attrs={
             'autocomplete': "off", 
             'id': 'function-id',
-            'value': "awesome,neat",
-            'name': 'function'
+            'value': "awesome,neat"
         })
     )
     
@@ -93,26 +87,25 @@ class ProfileForms(forms.Form):
         max_length=150,
         required=True,
         label="Nome de Usuário",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'username'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'username-id'})
     )
     first_name = forms.CharField(
         max_length=150,
         required=False,
         label="Primeiro Nome",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'firstName'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'first_name-id'})
     )
     last_name = forms.CharField(
         max_length=150,
         required=False,
         label="Último Nome",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'lastName'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'last_name-id'})
     )
     email = forms.EmailField(
         required=True,
         label="E-mail",
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'name': 'email',
             'id': 'email-id'
             })
     )
@@ -125,6 +118,7 @@ class ProfileForms(forms.Form):
     
     def clean_function(self):
         function = self.cleaned_data.get('function')
+        
         function_converted_int = [int(item) for item in function]
         return function_converted_int
 
@@ -158,6 +152,7 @@ class ChangePasswordForms(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
+                'id': 'old_password-id'
             }
         ),
     )
@@ -168,7 +163,8 @@ class ChangePasswordForms(forms.Form):
         min_length=8,
         widget=forms.PasswordInput(
             attrs={
-                'class': 'form-control'
+                'class': 'form-control',
+                'id': 'new_password-id'
             }
         ),
     )
@@ -178,7 +174,8 @@ class ChangePasswordForms(forms.Form):
         max_length=70,
         widget=forms.PasswordInput(
             attrs={
-                'class': 'form-control'
+                'class': 'form-control',
+                'id': 'password_confirmation-id'
             }
         ),
     )
@@ -204,19 +201,19 @@ class CreateUserForms(forms.Form):
         max_length=150,
         required=True,
         label="Nome de Usuário",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'username'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'username-id'})
     )
     first_name = forms.CharField(
         max_length=150,
-        required=False,
+        required=True,
         label="Primeiro Nome",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'firstName'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'first_name'})
     )
     last_name = forms.CharField(
         max_length=150,
         required=False,
         label="Último Nome",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'lastName'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'last_name-id'})
     )
     #campo para Member
     cell_phone = forms.CharField(
@@ -280,3 +277,19 @@ class CreateUserForms(forms.Form):
             else:
                 return password_confirmation
         
+
+class MemberFunctionForms(forms.Form):
+    functions_name = forms.CharField(
+        max_length=50,
+        required=True,
+        label="Nome da função",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'functions_name-id'})
+    )
+
+    def clean_functions_name(self):
+        functions_name = self.cleaned_data.get('functions_name')
+
+        if not all(char.isalpha() or char.isspace() for char in functions_name):
+            raise forms.ValidationError("A função deve conter apenas letras.")
+        
+        return functions_name.title()

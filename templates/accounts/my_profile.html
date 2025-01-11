@@ -23,6 +23,10 @@
                 </li>
 
                 <li class="nav-item">
+                    <button class="nav-link {% if active_tab == 'create-functions' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-create-functions">Criar Função</button>
+                </li>
+
+                <li class="nav-item">
                     <button class="nav-link {% if active_tab == 'change-password' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-change-password">Alterar Senha</button>
                 </li>
             </ul>
@@ -127,6 +131,36 @@
                     
                 </div>
                 {% comment %} fim do tab mudar de senha {% endcomment %}
+
+                <div class="tab-pane fade {% if active_tab == 'create-functions' %}show active{% endif %}" id="profile-create-functions">
+                    <!-- Change Password Form -->
+                    <form id="form-create-functions" action="{% url 'change_password' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% for field in member_functions_forms.visible_fields %}
+                            
+                                <div class="row mb-3">
+                                    <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                    <div class="col-12">
+                                        {{ field }}
+                                    </div>
+                                </div>
+
+                            {% include "partials/_alerts_forms.html" %}
+                            
+                        {% endfor %}
+
+                        {% comment %} Identifica o formulario {% endcomment %}
+                        <input type="hidden" name="form_type" value="create_functions">
+
+                        <div class="text-center">
+                            <button type="submit" form="form-create-functions" class="btn button">Criar</button>
+                        </div>
+                    
+                    </form>
+                    {% comment %} Fim do formulario para criar função {% endcomment %}
+                </div>
+                {% comment %} fim do tab profile-create-functions {% endcomment %}
             </div>
             {% comment %} Fim do tab-content {% endcomment %}
         </div>

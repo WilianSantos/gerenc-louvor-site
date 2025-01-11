@@ -13,7 +13,7 @@ import requests
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 from .models import CustomUser, TokenRecord
-from .forms import LoginForms, ProfileForms, ChangePasswordForms, CreateUserForms
+from .forms import LoginForms, ProfileForms, ChangePasswordForms, CreateUserForms, MemberFunctionForms
 from apps.simpleJWT.utils import make_request_in_api, handle_request_errors, error_checking
 
 
@@ -164,8 +164,11 @@ def my_profile(request):
     if not functions_response or not user_response or not member_response:
         logout(request)
         return redirect('login_with_jwt')
-
+    
+    # Carregando formularios da pagina
     change_password_forms = ChangePasswordForms()
+
+    member_functions_forms = MemberFunctionForms()
 
     form_data = {**member_response, **user_response}
     profile_forms = ProfileForms(form_data=form_data, functions_data=functions_response)
@@ -190,7 +193,7 @@ def my_profile(request):
                 first_name = profile_forms.cleaned_data['first_name']
                 last_name = profile_forms.cleaned_data['last_name']
                 email = profile_forms.cleaned_data['email']
-                
+
                 member_data = {
                     "name": name,
                     "availability": availability,
@@ -274,20 +277,51 @@ def my_profile(request):
                 return render(request, 'accounts/my_profile.html', 
                     {
                         'member': member_response,
-                        'profile_forms': profile_forms,
                         "user": user,
+                        'profile_forms': profile_forms,
                         'change_password_forms': change_password_forms,
+                        'member_functions_forms': member_functions_forms,
                         'active_tab': active_tab
                     }
                 )
 
+        elif form_type == 'create_functions':
+            # Formulario para criar função do usuario
+            member_functions_forms = MemberFunctionForms(request.POST)
+            if member_functions_forms.is_valid():
+                functions_name = member_functions_forms.cleaned_data['functions_name']
+
+                create_function_response = make_request_in_api(
+                    request=request,
+                    endpoint='member-functions/',
+                    request_method='POST',
+                    payload={"functions_name": functions_name}
+                )
+                # Verificando erro da requisição
+                error_checking(request=request, response=create_function_response)
+                messages.success(request, 'Função criada.')
+            
+                return redirect('my_profile')
+            else:
+                active_tab = 'create-functions'
+                return render(request, 'accounts/my_profile.html', 
+                    {
+                        'member': member_response,
+                        "user": user,
+                        'profile_forms': profile_forms,
+                        'change_password_forms': change_password_forms,
+                        'member_functions_forms': member_functions_forms,
+                        'active_tab': active_tab
+                    }
+                )
 
     return render(request, 'accounts/my_profile.html', 
         {
             'member': member_response,
-            'profile_forms': profile_forms,
             "user": user,
+            'profile_forms': profile_forms,
             'change_password_forms': change_password_forms,
+            'member_functions_forms': member_functions_forms,
             'active_tab': active_tab
         }
     )
