@@ -11,7 +11,7 @@ import re
 from itsdangerous import URLSafeTimedSerializer
 
 from apps.accounts.models import CustomUser, TokenRecord
-from apps.simpleJWT.utils import make_request_in_api, error_checking
+from apps.requests_in_api.utils import make_request_in_api, error_checking
 
 
 @login_required

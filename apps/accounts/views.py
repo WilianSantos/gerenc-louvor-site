@@ -14,7 +14,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 from .models import CustomUser, TokenRecord
 from .forms import LoginForms, ProfileForms, ChangePasswordForms, CreateUserForms, MemberFunctionForms
-from apps.simpleJWT.utils import make_request_in_api, handle_request_errors, error_checking
+from apps.requests_in_api.utils import make_request_in_api, handle_request_errors, error_checking
 
 
 def login_with_jwt(request):

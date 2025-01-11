@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class SimplejwtConfig(AppConfig):
+class RequestsInApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.simpleJWT'
+    name = 'apps.requests_in_api'
