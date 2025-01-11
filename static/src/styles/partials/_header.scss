@@ -1,59 +1,90 @@
 @use '../variables';
 
-.header-dash {
-    background-color: variables.$menuBackgroundColor;
-    box-shadow: 0px 2px 20px rgba($color: #c7ecee, $alpha: .6);
+.header {
+    background-color: variables.$backgroundColor;
+    box-shadow: 0 10px 40px rgba($color: #c7ecee, $alpha: .7);
     height: 15vh;
 
-
-    &__menu {
-        display: flex;
-        justify-content: space-between;
+    &__button {
+        border: 1px solid variables.$secondTextColor;
+        border-radius: 4px;
+        background-color: transparent;
+        width: 2em;
+        height: 2em;
+        display: none;
         align-items: center;
-    
+        justify-content: center;
+        margin-bottom: 20px;
 
-        .title--small {
-            margin: 0;
+        &:focus {
+            box-shadow: none
         }
-
-        &__button {
-            border: 1px solid variables.$secondTextColor;
-            border-radius: 4px;
-            background-color: transparent;
-            margin-left: 5vw;
-            width: 2.5em;
-            height: 2.5em;
-            display: block;
-            align-items: center;
-            
-
-            i {
-                color: variables.$secondTextColor;
-                font-size: 1.5em;
-            }
-        }
-    }
-
-    .sub-menu {
-        margin-left: 10vw;
 
         i {
-            font-size: 1.2em;
-            margin-right: .5em;
+            color: variables.$secondTextColor;
+            font-size: 1.5em;
+
+            @media (max-width: 425px) {
+                font-size: 1em;
+            }
         }
+
+        @media (max-width: 768px) {
+            display: flex;
+        }
+
+    }
+
+    &__menu {
         
-        .nav-item:hover {
-            .nav-link {
-                color: variables.$secondTextColor;
+        
+        &__nav {
+
+            .nav-item {
+                    
+                .nav-link.active {
+                    color: variables.$secondTextColor;
+                }
+                
+                .nav-link {
+                    i {
+                        font-size: 1.2em;
+                        margin-right: .5em;
+                    }
+
+                    &:hover {
+                        color: variables.$secondTextColor;
+                    }
+                }
             }
         }
     }
 
-    &__nav {
+    &__navbar {
         color: variables.$primaryTextColor;
         
+        .nav-item.active {
+            color: variables.$secondTextColor;
+        }
 
         &__dropdown {
+
+            &__img {
+                width: 30px;
+                border-radius: 50%;
+            }
+
+            .nav-link {
+                color: variables.$primaryTextColor;
+
+                i {
+                    font-size: 40px;
+                }
+
+                &:hover {
+                    color: variables.$secondTextColor;
+                }
+            }
 
             .dropdown-menu {
                 width: 100%;
@@ -65,24 +96,14 @@
 
                 .dropdown-item {
                     .text {
-                        margin-left: 1em;
+                        margin-left: .5em;
+                    }
+
+                    &:hover {
+                        color: variables.$secondTextColor;
                     }
                 }
             }
         }
     }
-
-    &__dropdown_profile {
-
-        i {
-            font-size: 50px;
-        }
-    }
-
-    &--is-hover {
-        &:hover {
-            color: variables.$secondTextColor;
-        }
-    }
-
 }

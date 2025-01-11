@@ -5,14 +5,15 @@
     align-items: center;
     justify-content: space-between; 
     padding: 10vw;
+    gap: 1vw;
     
-
-    @media (max-width: 425px) {
+    @media (max-width: 768px) {
         flex-direction: column;
     }
 
     &__form {
         padding: 20px;
+        min-width: 325px;
         display: flex;
         flex-direction: column;
         border: 1px solid variables.$borderColor;

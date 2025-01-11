@@ -1,49 +1,59 @@
 {% extends "shared/base.html" %}
 {% load static %}
 {% block contents %}
-    <header class="navbar navbar-expand-lg sticky-top p-2 header-dash">
+    <header class="navbar navbar-expand-lg sticky-top header">
         <div class="container">
-            <div class="d-flex header-dash__menu">
-                <h1 class="title--small">Igreja</h1>
-                <button class="header-dash__menu__button">
-                    <i class="bi bi-list"></i>
-                </button>
-            </div>
-            <div class="sub-menu">
-                <Ul class="nav">
-                    <li class="nav-item">
-                        <a href="{% url 'dashboard' %}"  class="nav-link text">
-                            <i class="bi bi-graph-up-arrow"></i>
-                            Página Inicial
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <div class="dropdown">
-                            <a href="#" class="nav-link dropdown-toggle text" data-bs-toggle="dropdown">
-                                <i class="bi bi-file-earmark"></i>
-                                Páginas
+            <h1 class="title--small navbar-brand">Igreja</h1>
+            <button class="navbar-toggler header__button" type="button" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="offcanvas offcanvas-start header__menu" tabindex="-1" id="menu" aria-labelledby="menuLabel">
+                <div class="offcanvas-header">
+                    <h5 class="title--small" id="menuLabel">Igreja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body header__menu__nav">
+                    <ul class="navbar-nav justify-content-center flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a href="{% url 'dashboard' %}"  class="nav-link active text">
+                                <i class="bi bi-graph-up-arrow"></i>
+                                Página Inicial
                             </a>
-                            <ul class="dropdown-menu">
-                                <li class="dropdown-item">
-                                    <a href="#" class="nav-link text">Cadastro</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                </Ul>
+                        </li>
+                        <li class="nav-item">
+                            <div class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle text" data-bs-toggle="dropdown">
+                                    <i class="bi bi-file-earmark"></i>
+                                    Páginas
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">
+                                        <a href="#" class="nav-link text">Cadastro</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <nav class="collapse navbar-collapse justify-content-end header-dash__nav">
+
+            <nav class="navbar justify-content-end header__navbar">
                 <ul class="nav nav-pills d-block d-md-flex">
-                    <li class="nav-item fw-bold dropdown header-dash__nav__dropdown">
-                        <a class="nav-link d-flex align-items-center pe-0 header-dash__dropdown_profile" href="#" data-bs-toggle="dropdown">
-                            <span class="d-none d-md-block dropdown-toggle-split ps-2 text"> {{ member.name }} </span>
-                            <i class="bi bi-person-circle"></i>
+                    <li class="nav-item fw-bold dropdown header__navbar__dropdown">
+                        <a class="nav-link d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                            <span class="d-md-block dropdown-toggle-split ps-2 text"> {{ member.name }} </span>
+                            
+                            {% if member.profile_picture %}
+                                <img class="header__navbar__dropdown__img" src="{{ member.profile_picture }}" alt="Perfil">
+                            {% else %}
+                                <i class="bi bi-person-circle"></i>
+                            {% endif %}
+                            
                         </a><!-- End Profile Iamge Icon -->
                 
                         <ul class="dropdown-menu dropdown-menu-arrow">
                             <li class="dropdown-header">
                                 <h6 class="text--big"> {{ member.name }} </h6>
-                                <span class="text">Web Designer</span>
                             </li>
                             <li>
                                 <hr class="dropdown-divider">
@@ -53,16 +63,6 @@
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'my_profile' %}">
                                     <i class="bi bi-person header-dash--is-hover"></i>
                                     <span class="text header-dash--is-hover">Meu Perfil</span>
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-                                    <i class="bi bi-gear header-dash--is-hover"></i>
-                                    <span class="text header-dash--is-hover">Account Settings</span>
                                 </a>
                             </li>
                             <li>
@@ -80,9 +80,10 @@
                     </li>
                 </ul>
             </nav>
+            
         </div>
     </header>
-   
+
     <div class="container">
         <main class="main__content">
             {% block dashboard_contents %}{% endblock dashboard_contents %}
