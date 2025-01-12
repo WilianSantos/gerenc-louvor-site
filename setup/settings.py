@@ -36,6 +36,9 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.dashboard',
     'apps.requests_in_api',
+    'apps.music',
+
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -173,3 +176,6 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = str(os.getenv('EMAIL_CONFIGURATION'))
 EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_CONFIGURATION_PASSWORD'))
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Configurações do tinymce
+TINYMCE_JS_URL = str(os.getenv('TINYMCE_URL'))

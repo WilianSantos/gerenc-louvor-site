@@ -10,5 +10,6 @@ urlpatterns = [
     path('', include('apps.home.urls')),
     path('', include('apps.accounts.urls')),
     path('', include('apps.dashboard.urls')),
+    path('', include('apps.music.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,77 @@
+{% extends 'shared/base_dashboard.html' %}
+{% load static %}
+{% block dashboard_contents %}
+    <main class="music">
+        <section class="music__video">
+
+        </section>
+
+        <section class="music__tab">
+            <ul class="nav nav-tabs">
+    
+                <li class="nav-item">
+                    <button class="nav-link {% if active_tab == 'music' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#music">Músicas</button>
+                </li>
+
+                <li class="nav-item">
+                    <button class="nav-link {% if active_tab == 'add-music' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#add-music">Adicionar Música</button>
+                </li>
+
+            </ul>
+            <div class="tab-content">
+                {% comment %} Inicio tab music {% endcomment %}
+                <div class="tab-pane fade pt-3 show active" id="music">
+                    <h1 class="title--big">TESTE</h1>
+                </div>
+                {% comment %} Fim do tab music {% endcomment %}
+
+                {% comment %} Inicio tab add-music {% endcomment %}
+                <div class="tab-pane fade pt-3 {% if active_tab == 'add-music' %}show active{% endif %}" id="add-music">
+                    
+                    <form  action="{% url 'music' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in file_upload_forms.visible_fields %}
+                            
+                            <div class="row">
+                                <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                <div class="col-12 input-group">
+                                    {{ field }}
+                                    <button class="btn btn-outline-secondary" type="submit" id="{{ field.id_for_label }}">Carregar</button>
+                                </div>
+                            </div>
+                        
+                        {% include "partials/_alerts_forms.html" %}
+                        
+                    {% endfor %}
+                        {% comment %} Identifica o formulario {% endcomment %}
+                        <input type="hidden" name="form_type" value="input_file">
+                    </form>
+                    
+                    <form action="{% url 'music' %}" method="POST" enctype="multipart/form-data" id="add-music">
+                        {% csrf_token %}
+                        {% for field in music_forms.visible_fields %}
+                            
+                            <div class="row">
+                                <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
+                                <div class="col-12">
+                                    {{ field }}
+                                </div>
+                            </div>
+                            
+                            {% include "partials/_alerts_forms.html" %}
+                            
+                        {% endfor %}
+
+                        {% comment %} Identifica o formulario {% endcomment %}
+                        <input type="hidden" name="form_type" value="add_music">
+
+                        <div class="text-center">
+                            <button type="submit" form="add-music" class="btn button">Adicionar</button>
+                        </div>
+                    </form>
+                </div>
+                {% comment %} Fim tab add-music {% endcomment %}
+            </div>
+        </section>
+    </main>
+{% endblock dashboard_contents %}

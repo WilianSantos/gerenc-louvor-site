@@ -1,4 +1,4 @@
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function() {
      // Função que captura o e-mail digitado e adiciona em um input emails
     document.getElementById('add-email').addEventListener('click', function() {
         const emailInput = document.getElementById('email-input');

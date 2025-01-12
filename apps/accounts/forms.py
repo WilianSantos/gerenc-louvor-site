@@ -78,6 +78,7 @@ class ProfileForms(forms.Form):
         widget=forms.SelectMultiple(attrs={
             'autocomplete': "off", 
             'id': 'function-id',
+            'class': 'multiple-selector',
             'value': "awesome,neat"
         })
     )

@@ -20,6 +20,9 @@ def dashboard(request):
     user = CustomUser.objects.get(id=request.user.id)
 
     member_id = user.member_id
+
+    # Determina a pagina ativa para o header
+    active_page = 'dashboard'
     
     member_response = make_request_in_api(
         endpoint='member/', 
@@ -123,5 +126,6 @@ def dashboard(request):
                         
     return render (request, 'dashboard/index.html', 
                     {
-                        'member': member_response
+                        'member': member_response,
+                        'active_page': active_page
                     })

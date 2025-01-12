@@ -3,7 +3,7 @@
 {% block dashboard_contents %}
     
     <main class="profile">
-        <div class="profile__info">
+        <section class="profile__info">
             {% if member.profile_picture %}
                 <img class="profile__info__img" src="{{ member.profile_picture }}" alt="Perfil">
             {% else %}
@@ -13,9 +13,9 @@
             <h2 class="title--small">{{ member.name }}</h2>
             {% comment %} Alertas {% endcomment %}
             {% include "partials/_alerts.html" %}
-        </div>
+        </section>
 
-        <div class="profile__forms">
+        <section class="profile__forms">
             <ul class="nav nav-tabs">
     
                 <li class="nav-item">
@@ -50,13 +50,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            {% elif field.name == "function" %}
-                                <div class="row">
-                                    <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
-                                    <div class="col-12">
-                                        {{ field }}
-                                    </div>
-                                </div>
                             {% else %}
                                 <div class="row">
                                     <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 text--big title--is-colored">{{ field.label }}</label>
@@ -65,6 +58,7 @@
                                     </div>
                                 </div>
                             {% endif %}
+                            
                             {% include "partials/_alerts_forms.html" %}
                             
                         {% endfor %}
@@ -163,7 +157,7 @@
                 {% comment %} fim do tab profile-create-functions {% endcomment %}
             </div>
             {% comment %} Fim do tab-content {% endcomment %}
-        </div>
+        </section>
     </main>
     
 {% endblock dashboard_contents %}

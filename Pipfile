@@ -11,8 +11,8 @@ django-redis = "*"
 mysqlclient = "*"
 pillow = "*"
 redis = "*"
-django-invitations = "*"
 itsdangerous = "*"
+pymupdf = "*"
 
 [dev-packages]
 

@@ -1,6 +1,6 @@
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Seletor multiplo com o TomSelect
-    new TomSelect('#function-id',{
+    new TomSelect('.multiple-selector',{
         plugins: {
             'clear_button':{
                 'title':'Remove all selected options',

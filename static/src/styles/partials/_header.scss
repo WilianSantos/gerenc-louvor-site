@@ -41,12 +41,12 @@
         &__nav {
 
             .nav-item {
-                    
-                .nav-link.active {
-                    color: variables.$secondTextColor;
-                }
                 
                 .nav-link {
+                    &.active {
+                        color: variables.$secondTextColor;
+                    }
+
                     i {
                         font-size: 1.2em;
                         margin-right: .5em;
