@@ -156,9 +156,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Urls da API
-URL_API_SIMPLE_JWT = 'http://localhost:8000/api/token/'
-URL_API_SIMPLE_JWT_REFRESH = 'http://localhost:8000/api/token/refresh/'
-URL_API = 'http://localhost:8000/api/praise/'
+URL_API_SIMPLE_JWT = 'http://praise-api:8000/api/token/'
+URL_API_SIMPLE_JWT_REFRESH = 'http://praise-api:8000/api/token/refresh/'
+URL_API = 'http://praise-api:8000/api/praise/'
 
 
 # Usuario customizado

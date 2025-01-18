@@ -14,7 +14,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 from .models import CustomUser, TokenRecord
 from .forms import LoginForms, ProfileForms, ChangePasswordForms, CreateUserForms, MemberFunctionForms
-from apps.requests_in_api.utils import make_request_in_api, handle_request_errors, error_checking
+from apps.requests_in_api.utils import handle_request_errors, error_checking, get_access_token
 
 
 def login_with_jwt(request):
@@ -41,6 +41,9 @@ def login_with_jwt(request):
             )
             # Verificação dos erros
             error_checking(request=request, response=token_response)
+            token_response = token_response.get('data')
+            if not token_response:
+                messages.error(request, 'Erro ao buscar token de acesso')
 
             new_password = request.POST.get('newPassword')
             try:
@@ -50,14 +53,15 @@ def login_with_jwt(request):
                 message_error = ', '.join(e.messages)
                 messages.error(request, message_error)
             
-            token_response = token_response.get('data')
             provisional_token = token_response.get('reset_token')
-            
             data_password = {
                 "token": provisional_token,
                 "new_password": new_password
             }
-            url = getattr(settings, "URL_API", None) + 'reset-password/'
+            url = getattr(settings, "URL_API", None) 
+            if not url:
+                return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+            url += 'reset-password/'
             
             reset_password_response = handle_request_errors(
                 func=requests.post,
@@ -67,7 +71,8 @@ def login_with_jwt(request):
             # Verificação dos erros
             error_checking(request=request, response=reset_password_response)
 
-            messages.success(request, 'Senha atualizada.')
+            if not messages.error:
+                messages.success(request, 'Senha atualizada.')
         
             #Garantindo que o usuario no cliente acesse com a nova senha para receber um novo token
             logout(request)
@@ -131,32 +136,46 @@ def my_profile(request):
 
     # Determina a aba ativa no frontend
     active_tab = request.GET.get('tab', 'edit-profile')
+
+    server_url = getattr(settings, "URL_API", None)
+    if not server_url:
+        return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
     
-    member_response = make_request_in_api(
-        endpoint='member/', 
-        id=member_id, 
-        request_method='GET', 
-        request=request
-    )
+    access_token = get_access_token(request)
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    member_url = server_url + 'member/' + str(member_id) + '/'
+    member_response = handle_request_errors(
+        request=request, 
+        func=requests.get,
+        url=member_url,
+        headers=headers, 
+        timeout=10
+    )    
     # Verificação dos erros
     error_checking(request=request, response=member_response)
     member_response = member_response.get('data')
             
-    user_response = make_request_in_api(
-        endpoint='user/',
-        id=user.id,
-        request_method='GET',
-        request=request
-    )
+    user_url = server_url + 'user/' + str(user.id) + '/'
+    user_response = handle_request_errors(
+        request=request, 
+        func=requests.get,
+        url=user_url,
+        headers=headers, 
+        timeout=10
+    )    
     # Verificações dos erros
     error_checking(request=request, response=user_response)
     user_response = user_response.get('data')
 
-    functions_response = make_request_in_api(
-        endpoint='member-functions/',
-        request_method='GET',
-        request=request
-    )
+    member_functions_url = server_url + 'member-functions/'
+    functions_response = handle_request_errors(
+        request=request, 
+        func=requests.get,
+        url=member_functions_url,
+        headers=headers, 
+        timeout=10
+    )    
     # Verificação dos erros
     error_checking(request=request, response=functions_response)
     functions_response = functions_response.get('data')
@@ -206,8 +225,10 @@ def my_profile(request):
                     "last_name": last_name,
                     "email": email
                 }
+
+                access_token = get_access_token(request)
+                headers = {"Authorization": f"Bearer {access_token}"}
                 
-                files_data = None
                 if profile_picture:
                     # Salvando a imagem no site
                     user.profile_picture = profile_picture
@@ -216,37 +237,41 @@ def my_profile(request):
                     with open(user.profile_picture.path, 'rb') as file:
                         files_data = {"profile_picture": file}
 
-                        patch_response_member = make_request_in_api(
-                            endpoint='member/',
-                            id=member_id,
-                            request_method='PATCH',
-                            payload=member_data,
+                        put_response_member = handle_request_errors(
                             request=request,
-                            files=files_data
+                            func=requests.put,
+                            url=member_url,
+                            headers=headers,
+                            json=member_data,
+                            files=files_data,
+                            timeout=10
                         )
                 else:
-                    patch_response_member = make_request_in_api(
-                    endpoint='member/',
-                    id=member_id,
-                    request_method='PATCH',
-                    payload=member_data,
+                    put_response_member = handle_request_errors(
+                        request=request,
+                        func=requests.put,
+                        url=member_url,
+                        headers=headers,
+                        json=member_data,
+                        timeout=10
+                    )
+                # Verificando erro da requisição
+                error_checking(request=request, response=put_response_member)
+
+                put_response_user = handle_request_errors(
                     request=request,
+                    func=requests.put,
+                    url=user_url,
+                    headers=headers,
+                    json=user_data,
+                    timeout=10
                 )
                 # Verificando erro da requisição
-                error_checking(request=request, response=patch_response_member)
+                error_checking(request=request, response=put_response_user)
 
-                patch_response_user = make_request_in_api(
-                    endpoint='user/',
-                    id=user.id,
-                    request_method='PATCH',
-                    payload=user_data,
-                    request=request
-                )
-                # Verificando erro da requisição
-                error_checking(request=request, response=patch_response_user)
-
-                messages.success(request, 'Dados atualizados.')
-                return redirect('my_profile')
+                if not messages.error:
+                    messages.success(request, 'Dados atualizados.')
+                    return redirect('my_profile')
             
         elif form_type == 'change_password':
             # Formulario de atualização de senha
@@ -260,30 +285,26 @@ def my_profile(request):
                     "new_password": new_password
                 }
 
-                response_change_password = make_request_in_api(
-                    endpoint='change-password/',
-                    request_method='POST',
+                access_token = get_access_token(request)
+                headers = {"Authorization": f"Bearer {access_token}"}
+
+                change_password_url = server_url + 'change-password/'
+                response_change_password = handle_request_errors(
                     request=request,
-                    payload=data_change_password
+                    func=requests.post,
+                    url=change_password_url,
+                    headers=headers,
+                    json=data_change_password,
+                    timeout=10
                 )
                 # Verificando erro da requisição
                 error_checking(request=request, response=response_change_password)
                 
-                messages.success(request, 'Senha atualizada.')
-            
-                return redirect('my_profile')
+                if not messages.error:
+                    messages.success(request, 'Senha atualizada.')
+                    return redirect('my_profile')
             else:
                 active_tab = 'change-password'
-                return render(request, 'accounts/my_profile.html', 
-                    {
-                        'member': member_response,
-                        "user": user,
-                        'profile_forms': profile_forms,
-                        'change_password_forms': change_password_forms,
-                        'member_functions_forms': member_functions_forms,
-                        'active_tab': active_tab
-                    }
-                )
 
         elif form_type == 'create_functions':
             # Formulario para criar função do usuario
@@ -291,29 +312,26 @@ def my_profile(request):
             if member_functions_forms.is_valid():
                 functions_name = member_functions_forms.cleaned_data['functions_name']
 
-                create_function_response = make_request_in_api(
+                access_token = get_access_token(request)
+                headers = {"Authorization": f"Bearer {access_token}"}
+
+                create_function_response = handle_request_errors(
                     request=request,
-                    endpoint='member-functions/',
-                    request_method='POST',
-                    payload={"functions_name": functions_name}
+                    func=requests.post,
+                    url=member_functions_url,
+                    headers=headers,
+                    json={"functions_name": functions_name},
+                    timeout=10
                 )
                 # Verificando erro da requisição
                 error_checking(request=request, response=create_function_response)
-                messages.success(request, 'Função criada.')
-            
-                return redirect('my_profile')
+
+                if not messages.error:
+                    messages.success(request, 'Função criada.')
+                    return redirect('my_profile')
+                
             else:
                 active_tab = 'create-functions'
-                return render(request, 'accounts/my_profile.html', 
-                    {
-                        'member': member_response,
-                        "user": user,
-                        'profile_forms': profile_forms,
-                        'change_password_forms': change_password_forms,
-                        'member_functions_forms': member_functions_forms,
-                        'active_tab': active_tab
-                    }
-                )
 
     return render(request, 'accounts/my_profile.html', 
         {
@@ -330,8 +348,7 @@ def my_profile(request):
 @login_required
 def logout_view(request):
     logout(request)
-    messages.success(request, "Login encerrado com sucesso!")
-    return redirect('login_with_jwt')
+    return redirect('home')
 
 
 def create_user(request, signed_data):
@@ -402,6 +419,7 @@ def create_user(request, signed_data):
             error_checking(request=request, response=create_user_response)
             create_user_response = create_user_response.get('data')
             if not create_user_response:
+                messages.error(request, 'Erro ao criar registro.')
                 return redirect('login_with_jwt')
             
             user_id = create_user_response.get('user_id')

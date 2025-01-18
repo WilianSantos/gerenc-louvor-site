@@ -3,14 +3,13 @@ services:
     image: mysql:8.0
     env_file:
       - .env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${PASSWORD_MYSQL}
-      MYSQL_DATABASE: ${DATABASE_NAME}
     ports:
       - "3308:3306"
     volumes:
       - db_data_site:/var/lib/mysql
-      
+    networks:
+      - app-network
+
   redis-praise-site:
     image: redis:latest
     container_name: redis-praise-site
@@ -18,11 +17,13 @@ services:
       - .env
     ports:
       - "6379:6379"
-    command: ["redis-server", "--requirepass", "${PASSWORD_REDIS}"]
+    command: ["redis-server", "--requirepass", "${PASSWORD_REDIS:-defaultpassword}"]
     volumes:
       - redis_data_site:/data
     restart: always
-  
+    networks:
+      - app-network
+
   web-praise:
     build: .
     command: python manage.py runserver 0.0.0.0:8001
@@ -36,13 +37,23 @@ services:
       - grunt-watch-praise
     env_file:
       - .env
+    networks:
+      - app-network
 
   grunt-watch-praise:
     build: .
     command: npm run grunt
     volumes:
       - .:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+    name: network-praise
 
 volumes:
   db_data_site:
   redis_data_site:
+

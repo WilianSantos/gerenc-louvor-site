@@ -5,11 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
-from apps.requests_in_api.utils import make_request_in_api, error_checking
+from apps.requests_in_api.utils import error_checking, get_access_token, handle_request_errors
 from apps.accounts.models import CustomUser
 from .forms import MusicForms, FileUploadForm
 
-import fitz  # PyMuPDF
+import fitz  
+
+import requests
 
 
 @login_required
@@ -28,31 +30,44 @@ def music(request):
     if not tinymce_url:
         messages.error(request, 'Configuração da url do tinymce ausente.')
     
-    member_response = make_request_in_api(
-        endpoint='member/', 
-        id=member_id, 
-        request_method='GET', 
-        request=request
+    server_url = getattr(settings, "URL_API", None)
+    if not server_url:
+        return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+    
+    access_token = get_access_token(request)
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    member_url = server_url + 'member/' + str(member_id) + '/'
+    member_response = handle_request_errors(
+        request=request, 
+        func=requests.get,
+        url=member_url,
+        headers=headers, 
+        timeout=10
     )
     # Verificação dos erros
     error_checking(request=request, response=member_response)
     member_response = member_response.get('data')
 
-    categorys_response = make_request_in_api(
-        endpoint='music-category/',
-        request_method='GET',
-        request=request
+    music_categorys_url = server_url + 'music-category/'
+
+    music_categorys_response = handle_request_errors(
+        request=request,
+        func=requests.get,
+        url=music_categorys_url,
+        headers=headers, 
+        timeout=10
     )
     # Verificação dos erros
-    error_checking(request=request, response=categorys_response)
-    categorys_response =categorys_response.get('data')
+    error_checking(request=request, response=music_categorys_response)
+    music_categorys_response =music_categorys_response.get('data')
 
     if not member_response:
         logout(request)
         return redirect('login_with_jwt')
     
     # Carregando formularios
-    music_forms = MusicForms(categorys_data=categorys_response)
+    music_forms = MusicForms(categorys_data=music_categorys_response)
     file_upload_forms = FileUploadForm()
 
     if request.method == 'POST':

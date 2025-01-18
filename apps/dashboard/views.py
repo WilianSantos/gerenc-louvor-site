@@ -8,10 +8,12 @@ from django.contrib.auth import logout
 
 import re
 
+import requests
+
 from itsdangerous import URLSafeTimedSerializer
 
 from apps.accounts.models import CustomUser, TokenRecord
-from apps.requests_in_api.utils import make_request_in_api, error_checking
+from apps.requests_in_api.utils import error_checking, handle_request_errors, get_access_token
 
 
 @login_required
@@ -24,11 +26,20 @@ def dashboard(request):
     # Determina a pagina ativa para o header
     active_page = 'dashboard'
     
-    member_response = make_request_in_api(
-        endpoint='member/', 
-        id=member_id, 
-        request_method='GET', 
-        request=request
+    server_url = getattr(settings, "URL_API", None)
+    if not server_url:
+        return messages.error(request, 'Configuração do servidor de autenticação está ausente. - Status: 400')
+    
+    access_token = get_access_token(request)
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    member_url = server_url + 'member/' + str(member_id) + '/'
+    member_response = handle_request_errors(
+        request=request, 
+        func=requests.get,
+        url=member_url,
+        headers=headers, 
+        timeout=10
     )
     # Verificando erros
     error_checking(request=request, response=member_response)
@@ -68,13 +79,20 @@ def dashboard(request):
 
                 auth_s = URLSafeTimedSerializer(settings.SECRET_KEY)
 
+                access_token = get_access_token(request)
+                headers = {"Authorization": f"Bearer {access_token}"}
+
+                token_temporary_url = server_url + "token-temporary/"
+
                 for email in email_address:
                     data_email = {"email": email}
-                    token_response = make_request_in_api(
+                    token_response = handle_request_errors(
                         request=request,
-                        endpoint="token-temporary/",
-                        request_method="POST",
-                        payload=data_email
+                        func=requests.post,
+                        url=token_temporary_url,
+                        headers=headers,
+                        json=data_email,
+                        timeout=10
                     )
                     error_checking(request=request, response=token_response)
                     token_response = token_response.get('data')
@@ -87,10 +105,12 @@ def dashboard(request):
 
                     if not temporary_token:
                         messages.error(request, f"Erro ao gerar token para {email}. {temporary_token}")
-                        continue  # Pula para o próximo e-mail se houver erro
+                        continue 
 
+                    # Criptografando a url para enviar para o email
                     signed_data = {"email": email, "token": temporary_token}
                     token = auth_s.dumps(signed_data, salt='email-invite')
+                    # Verificando token identico no Banco de dados
                     if TokenRecord.objects.filter(temporary_token=token).exists():
                         token = auth_s.dumps(signed_data, salt='email-invite')
 
