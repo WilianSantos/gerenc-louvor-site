@@ -17,7 +17,7 @@ def error_checking(request, response):
         elif response.get('detail_error'):
             messages.error(request, response.get('detail_error'))
 
-
+#TODO Juntar as duas funções de requisição em uma so para simplificar o codigo
 def handle_request_errors(request, func, *args, **kwargs):
     """
     Função utilitária para tratar erros de requisição.

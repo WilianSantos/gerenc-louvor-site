@@ -1,7 +1,5 @@
 from django import forms
 
-from tinymce.models import HTMLField
-
 
 class MusicForms(forms.Form):
     music_title = forms.CharField(
@@ -64,7 +62,7 @@ class MusicForms(forms.Form):
 
 class FileUploadForm(forms.Form):
     file = forms.FileField(
-        label="Carregar PDF da música",
+        label="Carregar PDF (Opcional)",
         required=True,
         widget=forms.ClearableFileInput(attrs={
             "class": "form-control",
@@ -81,7 +79,7 @@ class FileUploadForm(forms.Form):
             raise forms.ValidationError("O arquivo não pode exceder 5MB.")
 
         # Validação do tipo de arquivo
-        valid_extensions = [".pdf", ".txt"]
+        valid_extensions = [".pdf"]
         if not any(file.name.endswith(ext) for ext in valid_extensions):
             raise forms.ValidationError("Tipo de arquivo não permitido. Carregue apenas PDF")
 

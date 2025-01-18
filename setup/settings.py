@@ -37,8 +37,6 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.requests_in_api',
     'apps.music',
-
-    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -78,22 +76,22 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'praise_management_site',
-        "USER": "root",
-        "PASSWORD": str(os.getenv('PASSWORD_MYSQL')),
-        "HOST": "127.0.0.1",
-        "PORT": "3306",
-    }
+        'NAME': os.getenv('DATABASE_NAME', 'praise_management_site'),
+        "USER": os.getenv('DATABASE_USER', 'root'),
+        "PASSWORD": os.getenv('PASSWORD_MYSQL', ''),
+        "HOST": os.getenv('DATABASE_HOST', 'db-praise-site'),  # 'db' é o nome do serviço no docker-compose
+        "PORT": os.getenv('DATABASE_PORT', '3308'),
+    } 
 }
 
 # Redis caches
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/2",
+        "LOCATION": "redis://redis-praise-site:6379/2",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            'PASSWORD': str(os.getenv('PASSWORD_REDIS')),
+            'PASSWORD': str(os.getenv('PASSWORD_REDIS', '')),
         }
     }
 }
@@ -158,9 +156,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Urls da API
-URL_API_SIMPLE_JWT = 'http://127.0.0.1:8000/api/token/'
-URL_API_SIMPLE_JWT_REFRESH = 'http://127.0.0.1:8000/api/token/refresh/'
-URL_API = 'http://127.0.0.1:8000/api/praise/'
+URL_API_SIMPLE_JWT = 'http://localhost:8000/api/token/'
+URL_API_SIMPLE_JWT_REFRESH = 'http://localhost:8000/api/token/refresh/'
+URL_API = 'http://localhost:8000/api/praise/'
 
 
 # Usuario customizado

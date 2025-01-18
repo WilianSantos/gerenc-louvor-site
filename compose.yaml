@@ -1,0 +1,48 @@
+services:
+  db-praise-site:
+    image: mysql:8.0
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PASSWORD_MYSQL}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    ports:
+      - "3308:3306"
+    volumes:
+      - db_data_site:/var/lib/mysql
+      
+  redis-praise-site:
+    image: redis:latest
+    container_name: redis-praise-site
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "${PASSWORD_REDIS}"]
+    volumes:
+      - redis_data_site:/data
+    restart: always
+  
+  web-praise:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db-praise-site
+      - redis-praise-site
+      - grunt-watch-praise
+    env_file:
+      - .env
+
+  grunt-watch-praise:
+    build: .
+    command: npm run grunt
+    volumes:
+      - .:/app
+
+volumes:
+  db_data_site:
+  redis_data_site:

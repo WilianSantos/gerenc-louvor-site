@@ -2,9 +2,9 @@
 
 .music {
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: flex-start;
-    gap: 5vw;
+    gap: 2vw;
 
     @media (max-width: 768px) {
         flex-direction: column;
@@ -14,17 +14,21 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        background-color: rebeccapurple;
         gap: 1vw;
+        width: 30vw;
+        height: 300px;
+
+        &__iframe {
+            width: 300px;
+            height: 300px;
+        }
     }
 
     &__tab {
         border: 1px solid variables.$borderColor;
         padding: 20px;
-        min-width: 680px;
-
-        @media (max-width: 768px) {
-            min-width: 80vw;
-        }
+        min-width: calc(100vw - 2vw - 40vw);
 
         .nav-tabs {
             border-bottom: 3px solid rgba(variables.$secondTextColor, 0.6);
